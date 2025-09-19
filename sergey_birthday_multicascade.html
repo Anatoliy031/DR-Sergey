@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>С днём рождения, Сергей Валентинович!</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+  <style>
+    /*
+      Эта версия страницы наследует все украшения из предыдущих
+      изменений, но дополнительно добавляет многоступенчатый
+      каскад салютов и повышает высоту взрывов. Шарады,
+      радужные градиенты, искры, туман, звук и вибрация
+      сохранены. Код структурирован для ясности и
+      аккуратности.
+    */
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{--bg1:#667eea;--bg2:#764ba2;--glass:rgba(255,255,255,.95);--accent:#ff6b6b}
+    body{min-height:100vh;background:linear-gradient(135deg,var(--bg1),var(--bg2));font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;overflow-x:hidden;position:relative}
+
+    /* Canvas для салюта поверх всего; события мыши не перехватываются */
+    #fw-canvas{position:fixed;inset:0;width:100%;height:100%;z-index:999;pointer-events:none}
+
+    /* Слабая фоновая пыль */
+    .particles{position:fixed;inset:0;pointer-events:none;z-index:1}
+    .particle{position:absolute;width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.8);animation:float 15s linear infinite}
+    @keyframes float{0%{transform:translateY(100vh) rotate(0);opacity:0}10%,90%{opacity:1}100%{transform:translateY(-100vh) rotate(360deg);opacity:0}}
+
+    /* Основной контейнер и карточка */
+    .container{position:relative;z-index:10;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+    .birthday-card{
+      width:min(640px,100%);
+      background:var(--glass);
+      backdrop-filter:blur(20px);
+      border-radius:24px;
+      padding:22px;
+      box-shadow:0 25px 50px rgba(0,0,0,.15),0 0 0 1px rgba(255,255,255,.08);
+      transform:translateY(20px);
+      opacity:0;
+      animation:slideUp .8s ease-out .2s forwards;
+      position:relative;
+      overflow:hidden;
+    }
+    @keyframes slideUp{to{transform:translateY(0);opacity:1}}
+    .card-decoration{position:absolute;width:160px;height:160px;border-radius:50%;top:-50px;right:-50px;opacity:.08;background:linear-gradient(45deg,#ff6b6b,#ffd93d);animation:pulse 3s ease-in-out infinite}
+    .card-decoration:nth-child(2){top:auto;bottom:-40px;left:-40px;right:auto;background:linear-gradient(45deg,#4ecdc4,#44a08d);animation-delay:1s}
+    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+
+    .main-title{
+      font-family:'Dancing Script',cursive;
+      font-size:clamp(2.4rem,6vw,3.8rem);
+      font-weight:700;
+      text-align:center;
+      background:linear-gradient(135deg,var(--bg1),var(--bg2));
+      -webkit-background-clip:text;
+      background-clip:text;
+      -webkit-text-fill-color:transparent;
+      margin-bottom:6px;
+    }
+    .subtitle{
+      text-align:center;
+      font-size:1.05rem;
+      color:#666;
+      margin-bottom:18px;
+      font-weight:300;
+    }
+
+    .avatar-container{display:flex;justify-content:center;margin-bottom:18px}
+    .avatar{
+      width:160px;height:160px;border-radius:50%;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;
+      color:#fff;font-size:3rem;font-weight:800;background:linear-gradient(135deg,var(--bg1),var(--bg2));
+      border:6px solid #fff;box-shadow:0 12px 28px rgba(0,0,0,.18);animation:bounce 2s ease-in-out infinite;
+    }
+    .avatar::before{content:"";position:absolute;inset:-50%;background:linear-gradient(45deg,transparent,rgba(255,255,255,.32),transparent);transform:rotate(45deg);animation:shine 3s ease-in-out infinite}
+    .avatar .initials{position:relative;z-index:1}
+    @keyframes bounce{0%,20%,50%,80%,100%{transform:translateY(0)}40%{transform:translateY(-10px)}60%{transform:translateY(-5px)}}
+    @keyframes shine{0%{transform:translate(-100%,-100%) rotate(45deg)}50%{transform:translate(100%,100%) rotate(45deg)}100%{transform:translate(-100%,-100%) rotate(45deg)}}
+
+    .typewriter{
+      font-size:1.1rem;
+      font-weight:800;
+      color:var(--accent);
+      text-align:center;
+      margin:10px 0 14px;
+      min-height:56px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:0 8px;
+    }
+    .cursor{display:inline-block;width:2px;background:var(--accent);margin-left:4px;animation:blink 1s infinite}
+    @keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}
+    .wrong{position:relative;color:#d35c5c;text-decoration:line-through;text-decoration-thickness:2px}
+
+    .message{font-size:1.02rem;line-height:1.65;color:#3a3a3a;text-align:center}
+    .message p{margin-bottom:10px}
+    .signature{text-align:center;font-size:1.08rem;font-weight:700;color:#5263e9;margin-top:16px}
+
+    .fireworks-btn{
+      display:block;
+      margin:18px auto 4px;
+      padding:13px 26px;
+      background:linear-gradient(135deg,#ff6b6b,#ffd93d);
+      color:#fff;
+      border:0;
+      border-radius:999px;
+      font-size:1rem;
+      font-weight:700;
+      cursor:pointer;
+      transition:transform .2s,box-shadow .2s;
+      box-shadow:0 10px 22px rgba(255,107,107,.3);
+    }
+    .fireworks-btn:hover{transform:translateY(-2px);box-shadow:0 14px 28px rgba(255,107,107,.42)}
+    .fireworks-btn:active{transform:translateY(0)}
+
+    /* Падающие эмодзи */
+    .emoji-rain{position:fixed;inset:0;pointer-events:none;z-index:5}
+    .falling-emoji{position:absolute;font-size:22px;animation:fall 4.8s linear forwards}
+    @keyframes fall{from{transform:translateY(-100vh) rotate(0);opacity:1}to{transform:translateY(100vh) rotate(360deg);opacity:0}}
+
+    /* Тумблер звука */
+    .sound-toggle{
+      position:fixed;
+      right:14px;
+      bottom:14px;
+      z-index:1000;
+      background:rgba(0,0,0,.5);
+      backdrop-filter:blur(8px);
+      color:#fff;
+      border:0;
+      border-radius:999px;
+      padding:10px 14px;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      cursor:pointer;
+    }
+    .sound-toggle span{font-size:0.92rem;opacity:.9}
+    .sound-toggle .dot{width:8px;height:8px;border-radius:50%;background:#f87171}
+    .sound-on .dot{background:#34d399}
+
+    @media (max-width:768px){
+      .birthday-card{padding:20px}
+      .avatar{width:132px;height:132px;font-size:2.5rem}
+      .typewriter{font-size:1.02rem;min-height:48px}
+      .message{font-size:.98rem}
+    }
+  </style>
+</head>
+<body>
+  <!-- Холст для реалистичного салюта -->
+  <canvas id="fw-canvas"></canvas>
+  <!-- Фоновая пыль -->
+  <div class="particles" id="particles"></div>
+  <!-- Падающие эмодзи -->
+  <div class="emoji-rain" id="emojiRain"></div>
+
+  <div class="container">
+    <div class="birthday-card">
+      <div class="card-decoration"></div>
+      <div class="card-decoration"></div>
+      
+      <h1 class="main-title">С днём рождения!</h1>
+      <p class="subtitle">Сергей Валентинович</p>
+      
+      <div class="avatar-container">
+        <div class="avatar" id="avatar"><span class="initials">СВ</span></div>
+      </div>
+      
+      <div class="typewriter"><span id="typewriter-text"></span><span class="cursor">&nbsp;</span></div>
+      
+      <div class="message">
+        <p>Желаем мощного здоровья, лёгких побед и ровного огня в делах! 🔥</p>
+        <p>Пусть банька всегда в тонусе, мангал — без дыма в глаза, а выходные — сплошные «вау-моменты». ✨</p>
+        <p>Пусть новый год жизни качает как любимый трек: громко, чисто и на повторе! Больше смеха, вкусных встреч и поводов для гордости! 🎵</p>
+      </div>
+      
+      <div class="signature">С теплом — Анатолий и Ирина ❤️</div>
+      
+      <button class="fireworks-btn" id="fw-btn">🎆 Запустить салют!</button>
+    </div>
+  </div>
+  
+  <button id="soundToggle" class="sound-toggle" aria-pressed="false">
+    <div class="dot"></div><span>Звук: выкл</span>
+  </button>
+  
+<script>
+/*
+  Фоновая пыль и падающие эмодзи — лёгкие визуальные эффекты.
+*/
+(function(){
+  const wrap=document.getElementById('particles');
+  for(let i=0;i<48;i++){
+    const d=document.createElement('div');
+    d.className='particle';
+    d.style.left=(Math.random()*100)+'%';
+    d.style.animationDelay=(Math.random()*15)+'s';
+    d.style.animationDuration=(14+Math.random()*10)+'s';
+    wrap.appendChild(d);
+  }
+})();
+
+(function(){
+  const emojis=['🎉','🎂','🎈','🎁','✨','🌟','💫','🎊'];
+  const rain=document.getElementById('emojiRain');
+  setInterval(()=>{
+    const e=document.createElement('div');
+    e.className='falling-emoji';
+    e.textContent=emojis[Math.floor(Math.random()*emojis.length)];
+    e.style.left=(Math.random()*100)+'%';
+    e.style.animationDuration=(3.6+Math.random()*2.2)+'s';
+    rain.appendChild(e);
+    setTimeout(()=>e.remove(),5200);
+  },380);
+})();
+
+/*
+  Загрузка аватара: пытаемся загрузить изображение из набора, если файл
+  не найден — оставляем инициалы. Делаем попытки асинхронно.
+*/
+(function(){
+  const avatar=document.getElementById('avatar');
+  const initials=avatar.querySelector('.initials');
+  const candidates=[
+    "./sergey.jpg","./sergey.JPG","./sergey.jpeg","./sergey.JPEG",
+    "./sergey.png","./sergey.PNG","./sergey.webp","./sergey.WEBP",
+    "sergey.jpg","sergey.JPG","sergey.jpeg","sergey.JPEG",
+    "sergey.png","sergey.PNG","sergey.webp","sergey.WEBP",
+    "./photo.jpg","./photo.JPG","./photo.jpeg","./photo.JPEG",
+    "./photo.png","./photo.PNG","photo.jpg","photo.JPG",
+    "./image.jpg","./image.JPG","image.jpg","image.JPG"
+  ];
+  let i=0;
+  function tryNext(){
+    if(i>=candidates.length) return;
+    const img=new Image();
+    img.onload=function(){
+      initials.style.display='none';
+      Object.assign(img.style,{
+        position:'absolute',inset:'0',width:'100%',height:'100%',objectFit:'cover',borderRadius:'50%',zIndex:'0',opacity:'0',transition:'opacity .5s'
+      });
+      avatar.appendChild(img);
+      requestAnimationFrame(()=>img.style.opacity='1');
+    };
+    img.onerror=function(){ i++; setTimeout(tryNext,10); };
+    img.src=candidates[i] + "?v=" + Date.now();
+  }
+  setTimeout(tryNext,120);
+})();
+
+/*
+  «Машинка» — печатная строка с тактичной «ошибкой»: слово
+  зачеркивается, стирается и заменяется правильным. Реализовано
+  через промисы и асинхронные функции.
+*/
+(function(){
+  const el=document.getElementById('typewriter-text');
+  const lines=[
+    ["Желаем ", "обычного", "крепкого", " здоровья и бодрого настроя! 💪"],
+    ["Пусть выходные будут ", "обычными", "яркими", " и запоминающимися! ✨"],
+    ["Мангал — ", "дымный", "бездымный", ", а мясо — сочное! 🍖"],
+    ["В делах — ", "пауза", "ускорение", " и уверенные победы! 🚀"]
+  ];
+  const typeDelay=70, eraseDelay=45, holdWrong=700, holdLine=1200, gap=260;
+  function typeText(t,f){ return new Promise(res=>{
+    let i=f??0;
+    function step(){ el.textContent=t.slice(0,i+1); i++; (i<t.length)? setTimeout(step,typeDelay) : res(); }
+    t.length? setTimeout(step,typeDelay) : res();
+  }); }
+  function wrapWrong(prefix,wrong){ el.innerHTML=`${prefix}<span class="wrong" id="wrong-span">${wrong}</span>`; }
+  function eraseWrong(){ return new Promise(res=>{
+    const span=document.getElementById('wrong-span'); if(!span) return res();
+    (function step(){ const t=span.textContent; if(t.length){ span.textContent=t.slice(0,-1); setTimeout(step,eraseDelay); } else { span.remove(); res(); }})();
+  }); }
+  async function play([pre,wr,rt,post]){
+    el.textContent="";
+    await new Promise(r=>setTimeout(r,gap));
+    await typeText(pre+wr,0);
+    wrapWrong(pre,wr);
+    await new Promise(r=>setTimeout(r,holdWrong));
+    await eraseWrong();
+    await typeText(pre+rt,0);
+    await typeText(pre+rt+post,(pre+rt).length);
+    await new Promise(r=>setTimeout(r,holdLine));
+  }
+  (async function loop(){ let i=0; while(true){ await play(lines[i%lines.length]); i++; }})();
+})();
+
+/*
+  WebAudio с панорамой и задержкой — обеспечивает объёмный звук
+  салюта. Можно включить/выключить через тумблер.
+*/
+const Sound=(function(){
+  let ctx=null, enabled=false, master=1;
+  function ensure(){ if(!ctx){ const AC=window.AudioContext||window.webkitAudioContext; if(AC) ctx=new AC(); } return ctx; }
+  function setEnabled(v){ enabled=!!v; if(enabled && ctx?.state==='suspended') ctx.resume(); }
+  function now(){ return ctx? ctx.currentTime : 0; }
+  function mkNoise(sec=0.8){ const b=ctx.createBuffer(1, ctx.sampleRate*sec, ctx.sampleRate); const d=b.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1); return b; }
+  function pan(x){ const p=ctx.createStereoPanner? ctx.createStereoPanner() : ctx.createGain(); if(p.pan) p.pan.value=(x*2-1)*0.85; return p; }
+  function playLaunch(x){ if(!enabled || !ensure()) return; const t=now(); const n=ctx.createBufferSource(); n.buffer=mkNoise(0.22); const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=800; bp.Q.value=0.6; const g=ctx.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.35*master,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+0.22); const p=pan(x); n.connect(bp).connect(g).connect(p).connect(ctx.destination); n.start(t); n.stop(t+0.24); }
+  function playExplosion(x,heightPx,ppm){ if(!enabled || !ensure()) return; const dist=Math.max(1, ((innerHeight-heightPx)/ppm)); const delay=Math.min(0.7, dist/343); const t=now()+delay; const n=ctx.createBufferSource(); n.buffer=mkNoise(0.9); const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.setValueAtTime(2300,t); lp.frequency.exponentialRampToValueAtTime(260,t+0.8); const g=ctx.createGain(); const base=(0.95/Math.sqrt(dist))*master; g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(base,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+0.9); const p=pan(x); n.connect(lp).connect(g).connect(p).connect(ctx.destination); n.start(t); n.stop(t+0.95); for(let i=0;i<7;i++){ const d=0.12+Math.random()*0.28; const o=ctx.createOscillator(); o.type='triangle'; o.frequency.setValueAtTime(180+Math.random()*260,t+d); const gg=ctx.createGain(); const lv=(0.25/Math.sqrt(dist))*(0.7+Math.random()*0.6)*master; gg.gain.setValueAtTime(0.0001,t+d); gg.gain.exponentialRampToValueAtTime(lv,t+d+0.01); gg.gain.exponentialRampToValueAtTime(0.0001,t+d+0.12); const pp=pan(x+(Math.random()-0.5)*0.25); o.connect(gg).connect(pp).connect(ctx.destination); o.start(t+d); o.stop(t+d+0.14); } }
+  return { ensureCtx:ensure, setEnabled, get enabled(){return enabled;}, playLaunch, playExplosion, setVolume(v){ master=v; } };
+})();
+
+/*
+  Тумблер звука: позволяет включать/выключать звуковое сопровождение салюта.
+*/
+(function(){
+  const btn=document.getElementById('soundToggle');
+  function refresh(){
+    btn.classList.toggle('sound-on', Sound.enabled);
+    btn.setAttribute('aria-pressed', Sound.enabled ? 'true' : 'false');
+    btn.querySelector('span').textContent = 'Звук: ' + (Sound.enabled ? 'вкл' : 'выкл');
+  }
+  btn.addEventListener('click', ()=>{
+    Sound.ensureCtx();
+    Sound.setEnabled(!Sound.enabled);
+    refresh();
+  });
+  document.addEventListener('pointerdown', ()=>{ if(!Sound.enabled) Sound.ensureCtx(); }, {once:true});
+  refresh();
+})();
+
+/*
+  Реалистичный салют v5: улучшенные уровни и «мульти‑каскад».
+  • Взрывная цель задаётся случайным уровнем (high/mid/low), но уровни
+    подняты выше, так что салюты происходят прямо под аватаром и
+    над карточкой. При авто- и ручном запуске всегда выбираются
+    уровни выше центра.
+  • После каждого взрыва может запускаться каскад: небольшие
+    ракеты поднимаются выше и взрываются снова, создавая вторую волну.
+  • Сохраняются виды: радужные, золотые, ива, пчёлки, звёзды,
+    сердечки и прочие.
+*/
+(function(){
+  const canvas=document.getElementById('fw-canvas');
+  const ctx=canvas.getContext('2d', { alpha:true });
+  let DPR=1, W=0, H=0;
+  function resize(){
+    DPR=Math.min(window.devicePixelRatio||1, 2);
+    W=canvas.width=Math.floor(innerWidth*DPR);
+    H=canvas.height=Math.floor(innerHeight*DPR);
+    canvas.style.width=innerWidth+'px';
+    canvas.style.height=innerHeight+'px';
+  }
+  resize(); addEventListener('resize', resize);
+
+  // Палитры и типы оболочек
+  const PALETTES=[
+    [0,30,60,120,180,240,300],
+    [330,20,50,200,260],
+    [45,55,35,20,10],
+    [200,210,220,300,310],
+    [120,140,60,0,340]
+  ];
+  // Типы фейерверков, включая фигурные и пчёлки
+  const SHELLS=['peony','chrys','willow','palm','ring','strobe','crossette','double','golden','bees','star','heart'];
+
+  // Массивы для ракет, частиц и дыма
+  const rockets=[], parts=[], smoke=[];
+  let wind=0, windTarget=0, last=performance.now(), quality=1;
+  const MAX_BASE=1800;
+  const GR=0.06, PGR=0.075, FRI=0.985, PFRI=0.972;
+
+  // Вспомогательные функции
+  function rand(a,b){ return Math.random()*(b-a)+a; }
+  function clamp(v,a,b){ return Math.max(a, Math.min(b,v)); }
+  function hsv(h,s,v){ let f=(n,k=(n+h/60)%6)=>v - v*s*Math.max(Math.min(k,4-k,1),0); return [f(5),f(3),f(1)]; }
+  function rgb255([r,g,b],a=1){ return `rgba(${Math.floor(r*255)},${Math.floor(g*255)},${Math.floor(b*255)},${a})`; }
+  // Звезда и сердечко для фигурных залпов
+  function starPoints(){ const arr=[]; for(let i=0;i<10;i++){ const ang=i*Math.PI/5; const r=(i%2===0)?1:0.45; arr.push([Math.cos(ang)*r, Math.sin(ang)*r]); } return arr; }
+  function heartPoints(samples=64){ const arr=[]; for(let i=0;i<samples;i++){ const t=(i/samples)*Math.PI*2; const x=16*Math.pow(Math.sin(t),3); const y=13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t); arr.push([x/17, -y/17]); } return arr; }
+  const STAR=starPoints();
+  const HEART=heartPoints();
+
+  // Запуск ракеты: уровень high/mid/low, где high ближе к верху экрана
+  function launch(x, level='auto'){
+    // Определяем диапазоны: high — 10–30%, mid — 30–50%, low — 50–65%
+    const lvl = level==='auto' ? (Math.random()<0.6?'high': (Math.random()<0.6?'mid':'low')) : level;
+    const targetY = ({
+      high: rand(H*0.10, H*0.30),
+      mid:  rand(H*0.30, H*0.50),
+      low:  rand(H*0.50, H*0.65)
+    })[lvl];
+    const xpx=(x ?? rand(W*0.15, W*0.85));
+    const hue=rand(0,360);
+    const shell=SHELLS[Math.floor(rand(0,SHELLS.length))];
+    const pal=PALETTES[Math.floor(rand(0,PALETTES.length))];
+    rockets.push({
+      x:xpx,
+      y:H + 8,
+      vx: rand(-0.9,0.9),
+      vy: -rand(6.5,8.6),
+      hue,
+      pal,
+      life:0,
+      trail:[],
+      shell,
+      targetY
+    });
+    Sound.playLaunch(xpx/W);
+  }
+
+  // Создание дыма при взрыве
+  function spawnSmoke(x,y,n=6){
+    for(let i=0;i<n;i++){
+      smoke.push({ x, y, vx: rand(-0.2,0.2)+wind*0.4, vy: rand(-0.4,0.1), a:0.35, r: rand(1.2,3.8), g: rand(0.96,0.985) });
+    }
+  }
+
+  // Добавление частицы с определённым направлением и скоростью
+  function addParticleDirectional(x,y,angle,speed,opts={}){
+    // Цвет в HSV с возможностью смещения и смены оттенка на протяжении жизни
+    const h = opts.h ?? rand(0,360);
+    const s = opts.s ?? rand(0.65,0.98);
+    const v = opts.v ?? rand(0.85,1);
+    parts.push({
+      x,
+      y,
+      vx: Math.cos(angle)*speed + wind*0.35,
+      vy: Math.sin(angle)*speed,
+      a: 1,
+      size: (opts.size ?? rand(1.1,2.5)) * DPR,
+      tw: !!opts.tw,
+      star: !!opts.star,
+      hueStart: h,
+      hueShift: rand(10,24),
+      trail: [],
+      type: opts.type || 'spark',
+      split: false,
+      bee: !!opts.bee,
+      turn: rand(-0.06,0.06)
+    });
+  }
+  function addParticle(x,y,opts={}){
+    return addParticleDirectional(x,y, Math.random()*Math.PI*2, rand(1.2,3.6)*DPR, opts);
+  }
+
+  // Выстрел частиц по фигуре (звезда/сердце)
+  function burstShape(x,y,points,scale,opts){
+    points.forEach(([px,py])=>{
+      const ang = Math.atan2(py, px);
+      const sp  = scale * rand(1.2,2.4) * DPR;
+      addParticleDirectional(x,y,ang,sp,opts);
+    });
+  }
+
+  // Основная функция взрыва: генерирует частицы и дым, запускает каскад
+  function burst(x,y,hue,shell,pal){
+    // Вибрация
+    if(navigator.vibrate){ try{ navigator.vibrate([12,22,12]); } catch(e){} }
+    // Звук
+    Sound.playExplosion(x/W, (H - y), 2.8 * DPR);
+    // Количество частиц относительно производительности
+    const count = Math.round(rand(120,200) * quality);
+    const sat = rand(0.65,0.98), val = rand(0.85,1);
+    // Получить случайный оттенок из палитры с лёгким циклическим смещением
+    function cyc(){ const base=pal[Math.floor(rand(0,pal.length))] ?? hue; return (base + rand(0,360)) % 360; }
+    // Общая процедура для ядра + внешнего слоя
+    function coreOuter(){
+      // ядро
+      for(let i=0;i<count*0.4;i++) addParticle(x,y,{h:cyc(),s:sat,v:val,size:1.1,tw:Math.random()<0.15});
+      // внешний слой через небольшую задержку
+      setTimeout(()=>{
+        for(let i=0;i<count*0.6;i++) addParticle(x,y,{h:cyc(),s:sat,v:val,size:1.2,tw:Math.random()<0.25,star:Math.random()<0.12});
+      }, 120);
+    }
+    switch(shell){
+      case 'peony': coreOuter(); break;
+      case 'chrys': {
+        for(let i=0;i<count;i++) addParticle(x,y,{h:cyc(),s:sat,v:val,tw:Math.random()<0.35,star:Math.random()<0.12});
+        break;
+      }
+      case 'willow': {
+        for(let i=0;i<count*0.95;i++) addParticleDirectional(x,y,Math.random()*Math.PI*2, rand(1.0,2.4)*DPR,{h:hue,s:0.7,v:1,tw:true,size:rand(1.6,3.0)});
+        break;
+      }
+      case 'palm': {
+        const rays=10+Math.floor(Math.random()*6);
+        for(let r=0;r<rays;r++){
+          const ang=(r/rays)*Math.PI*2 + rand(-0.04,0.04);
+          for(let k=0;k<18;k++) addParticleDirectional(x,y,ang,rand(1.6,4.0)*DPR,{h:cyc(),s:sat,v:val,star:(k%4===0)&&Math.random()<0.7});
+        }
+        break;
+      }
+      case 'ring': {
+        const ringR=rand(2.4,4.2)*DPR;
+        for(let i=0;i<count*0.9;i++) addParticleDirectional(x,y,Math.random()*Math.PI*2, ringR,{h:cyc(),s:sat,v:val,tw:Math.random()<0.2,size:1.2});
+        for(let i=0;i<28;i++) addParticleDirectional(x,y,Math.random()*Math.PI*2, rand(0.8,1.8)*DPR,{h:cyc(),s:sat,v:val});
+        break;
+      }
+      case 'strobe': {
+        for(let i=0;i<count;i++) addParticle(x,y,{h:cyc(),s:sat,v:val,tw:true,star:Math.random()<0.2});
+        break;
+      }
+      case 'crossette': {
+        for(let i=0;i<count*0.8;i++) addParticle(x,y,{h:cyc(),s:sat,v:val,type:'x'});
+        break;
+      }
+      case 'double': {
+        coreOuter();
+        setTimeout(()=>{
+          for(let i=0;i<count*0.6;i++) addParticleDirectional(x,y,Math.random()*Math.PI*2, rand(2.4,3.8)*DPR,{h:cyc(),s:sat,v:val,tw:Math.random()<0.25});
+        }, 180);
+        break;
+      }
+      case 'golden': {
+        for(let i=0;i<count;i++) addParticleDirectional(x,y,Math.random()*Math.PI*2, rand(1.0,2.2)*DPR,{h:hue,s:0.6,v:1,tw:true,size:rand(1.8,3.2)});
+        break;
+      }
+      case 'bees': {
+        for(let i=0;i<count*0.8;i++) addParticle(x,y,{h:cyc(),s:sat,v:val,size:1.3,bee:true});
+        break;
+      }
+      case 'star': burstShape(x,y,STAR,2.6,{h:cyc(),s:sat,v:val,size:1.3}); break;
+      case 'heart': burstShape(x,y,HEART,2.4,{h:cyc(),s:sat,v:val,size:1.2}); break;
+    }
+    spawnSmoke(x,y,10);
+    // === Каскад: после основного взрыва запускаем маленькие ракеты ===
+    if(Math.random() < 0.7){
+      // Задержка, чтобы каскад шёл после основного света
+      setTimeout(()=>{
+        const n = Math.floor(rand(2,5));
+        for(let j=0;j<n;j++){
+          const ang = rand(-Math.PI/4, Math.PI/4);
+          const spd = rand(0.6,1.2) * DPR;
+          const miniTarget = Math.max(y - rand(H*0.12, H*0.25), H*0.05);
+          const h2 = cyc();
+          const miniTypes=['peony','chrys','willow','palm','ring','strobe','crossette','double','golden'];
+          const miniShell = miniTypes[Math.floor(rand(0, miniTypes.length))];
+          rockets.push({
+            x:x,
+            y:y,
+            vx: Math.cos(ang)*spd,
+            vy: -rand(3.0,5.0),
+            hue: h2,
+            pal: pal,
+            life:0,
+            trail:[],
+            shell: miniShell,
+            targetY: miniTarget
+          });
+          Sound.playLaunch(x/W);
+        }
+      }, 200);
+    }
+  }
+
+  // Основной шаг анимации
+  function step(dt){
+    // Плавное изменение ветра
+    wind += (windTarget - wind) * 0.003 * dt;
+    if(Math.random() < 0.003 * dt) windTarget = clamp(windTarget + rand(-0.18,0.18), -0.65, 0.65);
+    // Затухание для следов
+    ctx.globalCompositeOperation='destination-out';
+    ctx.fillStyle = `rgba(0,0,0,${innerWidth<480 ? 0.22 : 0.17})`;
+    ctx.fillRect(0,0,W,H);
+    ctx.globalCompositeOperation='lighter';
+    // Ракеты
+    ctx.shadowColor='rgba(255,255,255,.65)'; ctx.shadowBlur = 10 * DPR;
+    for(let i=rockets.length-1;i>=0;i--){
+      const r = rockets[i];
+      r.vy += GR * DPR;
+      r.x += r.vx + wind * 0.18;
+      r.y += r.vy;
+      r.life++;
+      (r.trail||(r.trail=[])).push([r.x,r.y]); if(r.trail.length>7) r.trail.shift();
+      ctx.beginPath(); ctx.fillStyle='rgba(255,255,255,.95)'; ctx.arc(r.x,r.y,1.9*DPR,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,.28)';
+      for(let t=0;t<r.trail.length-1;t++){
+        ctx.lineWidth = Math.max(0.7*DPR - t*0.12, 0.25);
+        ctx.beginPath(); ctx.moveTo(r.trail[t][0], r.trail[t][1]); ctx.lineTo(r.trail[t+1][0], r.trail[t+1][1]); ctx.stroke();
+      }
+      if(r.y <= r.targetY || r.vy > -0.12 || r.life>160){
+        burst(r.x, r.y, r.hue, r.shell, r.pal);
+        rockets.splice(i,1);
+      }
+    }
+    // Частицы
+    for(let i=parts.length-1;i>=0;i--){
+      const p = parts[i];
+      if(p.bee){ p.vx += Math.sin(p.turn)*0.06; p.vy += Math.cos(p.turn)*0.06; p.turn += rand(-0.08,0.08); }
+      p.vx *= PFRI; p.vy = p.vy*PFRI + PGR * DPR; p.vx += wind*0.01;
+      p.x += p.vx; p.y += p.vy;
+      p.a -= (0.010 + Math.random()*0.012) * (1.1 - 0.2*quality);
+      if(Math.random() < 0.7){ (p.trail||(p.trail=[])).push([p.x,p.y]); if(p.trail.length>6) p.trail.shift(); }
+      if(p.type==='x' && !p.split && Math.random() < 0.014){
+        p.split = true;
+        for(let k=0;k<4;k++){
+          parts.push({ x:p.x, y:p.y, vx:p.vx+Math.cos(k*Math.PI/2)*1.25, vy:p.vy+Math.sin(k*Math.PI/2)*1.25, a:p.a, size:p.size*0.9, tw:false, star:false, hueStart:p.hueStart, hueShift:p.hueShift, trail:[], type:'spark' });
+        }
+      }
+      if(p.a > 0){
+        const lifeHue = p.hueStart + p.hueShift * (1 - p.a);
+        const col = rgb255(hsv(lifeHue, 0.95, 1.0), p.tw ? p.a*(0.5+Math.random()*0.6) : p.a);
+        ctx.shadowBlur = 15 * DPR;
+        ctx.shadowColor = col;
+        if(p.star){
+          ctx.save(); ctx.translate(p.x,p.y);
+          ctx.beginPath();
+          for(let j=0;j<10;j++){
+            const ang=j*Math.PI/5;
+            const r=(j%2===0)? p.size*2.0 : p.size*0.9;
+            ctx.lineTo(Math.cos(ang)*r, Math.sin(ang)*r);
+          }
+          ctx.closePath(); ctx.fillStyle=col; ctx.fill(); ctx.restore();
+        } else {
+          ctx.beginPath(); ctx.fillStyle = col; ctx.arc(p.x,p.y,p.size,0,Math.PI*2); ctx.fill();
+        }
+        ctx.globalCompositeOperation='screen';
+        ctx.shadowBlur = 0;
+        ctx.lineWidth = Math.max(0.5, p.size*0.35);
+        ctx.strokeStyle = rgb255(hsv(lifeHue, 0.9, 1.0), Math.min(p.a*0.7,0.45));
+        if(p.trail && p.trail.length>1){ ctx.beginPath(); const t0 = p.trail[0]; ctx.moveTo(t0[0], t0[1]); for(let t=1;t<p.trail.length;t++) ctx.lineTo(p.trail[t][0], p.trail[t][1]); ctx.stroke(); }
+        ctx.globalCompositeOperation='lighter';
+      } else {
+        parts.splice(i,1);
+      }
+    }
+    // Дым
+    ctx.globalCompositeOperation='source-over'; ctx.shadowBlur = 0;
+    for(let i=smoke.length-1;i>=0;i--){
+      const s=smoke[i];
+      s.vx += wind*0.002; s.vy *= 0.98;
+      s.x += s.vx; s.y += s.vy;
+      s.a *= s.g;
+      ctx.fillStyle=`rgba(185,185,185,${s.a})`;
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r * DPR, 0, Math.PI*2); ctx.fill();
+      if(s.a < 0.02) smoke.splice(i,1);
+    }
+    // Ограничение количества частиц
+    const MAX=Math.floor(MAX_BASE * quality);
+    if(parts.length > MAX) parts.splice(0, parts.length - MAX);
+  }
+  // Основной цикл
+  function loop(ts){
+    const dt = Math.min(3, (ts - last) / 16.67);
+    const fps = 1000 / Math.max(16.67, ts - last);
+    last = ts;
+    const targetQ = fps > 55 ? 1 : fps > 40 ? 0.85 : fps > 30 ? 0.7 : 0.55;
+    quality += (targetQ - quality) * 0.05;
+    step(dt);
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+  // Кнопка запуска: выстреливает серию ракет на разных уровнях
+  document.getElementById('fw-btn').addEventListener('click', ()=>{
+    const seq = ['high','mid','high','low','mid','high'];
+    seq.forEach((lvl,i)=> setTimeout(()=> launch(undefined, lvl), i*140));
+    setTimeout(()=>{
+      for(let i=0;i<8;i++) setTimeout(()=> launch(undefined, i%2 ? 'mid' : 'high'), i*90);
+    }, 900);
+  });
+  // Автоволны
+  function autoWave(d=8000,int=760){
+    const id = setInterval(()=>{
+      const n = innerWidth < 480 ? 1 : (Math.random() < 0.6 ? 2 : 3);
+      for(let i=0;i<n;i++){
+        const lvl = Math.random() < 0.5 ? 'high' : (Math.random() < 0.6 ? 'mid' : 'low');
+        setTimeout(()=> launch(undefined, lvl), i * 120);
+      }
+    }, int);
+    setTimeout(()=> clearInterval(id), d);
+  }
+  // Начальные залпы и автоматические волны
+  setTimeout(()=>{ for(let i=0;i<7;i++) setTimeout(()=> launch(undefined,'high'), i*120); }, 1100);
+  setTimeout(()=> autoWave(), 3200);
+  setTimeout(()=> autoWave(), 10500);
+})();
+</script>
+</body>
+</html>
