@@ -18,6 +18,17 @@
       position:relative;
     }
 
+    /* Canvas для салюта */
+    #fireworksCanvas{
+      position:fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      pointer-events:none;
+      z-index:100;
+    }
+
     /* Слабая фоновая пыль */
     .particles{position:fixed;inset:0;pointer-events:none;z-index:1}
     .particle{position:absolute;width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.8);animation:float 15s linear infinite}
@@ -99,7 +110,38 @@
     .message p{margin-bottom:10px}
     .signature{text-align:center;font-size:1.08rem;font-weight:700;color:#5263e9;margin-top:16px}
 
-    /* Кнопка салюта была удалена */
+    /* Кнопка салюта */
+    .fireworks-btn{
+      display:block;
+      margin:20px auto 0;
+      padding:12px 28px;
+      background:linear-gradient(135deg,#ff6b6b,#ff8787);
+      color:white;
+      border:none;
+      border-radius:50px;
+      font-size:1.05rem;
+      font-weight:600;
+      cursor:pointer;
+      box-shadow:0 8px 20px rgba(255,107,107,.3);
+      transition:all .3s ease;
+      position:relative;
+      overflow:hidden;
+    }
+    .fireworks-btn:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(255,107,107,.4)}
+    .fireworks-btn:active{transform:translateY(0)}
+    .fireworks-btn::before{
+      content:"";
+      position:absolute;
+      top:50%;
+      left:50%;
+      width:0;
+      height:0;
+      border-radius:50%;
+      background:rgba(255,255,255,.3);
+      transform:translate(-50%,-50%);
+      transition:width .6s,height .6s;
+    }
+    .fireworks-btn:active::before{width:300px;height:300px}
 
     /* Падающие эмодзи */
     .emoji-rain{position:fixed;inset:0;pointer-events:none;z-index:5}
@@ -115,6 +157,9 @@
   </style>
 </head>
 <body>
+  <!-- Canvas для салюта -->
+  <canvas id="fireworksCanvas"></canvas>
+  
   <!-- Фоновая пыль -->
   <div class="particles" id="particles"></div>
   <!-- Падающие эмодзи -->
@@ -141,6 +186,8 @@
       </div>
       
       <div class="signature">С теплом — Анатолий и Ирина ❤️</div>
+      
+      <button class="fireworks-btn" onclick="launchFireworks()">🎆 Запустить салют!</button>
     </div>
   </div>
 
@@ -246,6 +293,292 @@
   }
   (async function loop(){ let idx=0; while(true){ await play(lines[idx%lines.length]); idx++; }})();
 })();
+
+/*
+  РЕАЛИСТИЧНЫЙ САЛЮТ
+*/
+const canvas = document.getElementById('fireworksCanvas');
+const ctx = canvas.getContext('2d');
+let fireworks = [];
+let particles = [];
+let autoLaunchInterval;
+
+// Настройка размера canvas
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+// Класс для частиц
+class Particle {
+  constructor(x, y, color, velocity, size = 3, trail = true) {
+    this.x = x;
+    this.y = y;
+    this.color = color;
+    this.velocity = velocity;
+    this.size = size;
+    this.trail = trail;
+    this.opacity = 1;
+    this.decay = Math.random() * 0.015 + 0.003;
+    this.gravity = 0.1;
+    this.history = [];
+    this.maxHistory = trail ? 15 : 0;
+  }
+
+  update() {
+    // Сохраняем историю для следа
+    if (this.trail && this.history.length < this.maxHistory) {
+      this.history.push({ x: this.x, y: this.y, opacity: this.opacity });
+    }
+
+    // Обновляем позицию
+    this.x += this.velocity.x;
+    this.y += this.velocity.y;
+    
+    // Гравитация и затухание
+    this.velocity.y += this.gravity;
+    this.velocity.x *= 0.99;
+    this.velocity.y *= 0.99;
+    
+    // Уменьшаем прозрачность
+    this.opacity -= this.decay;
+    
+    // Обновляем историю
+    this.history.forEach((point, index) => {
+      point.opacity *= 0.95;
+    });
+  }
+
+  draw() {
+    ctx.save();
+    
+    // Рисуем след
+    if (this.trail) {
+      this.history.forEach((point, index) => {
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, this.size * (index / this.history.length), 0, Math.PI * 2);
+        ctx.fillStyle = this.color.replace('rgb', 'rgba').replace(')', `, ${point.opacity})`);
+        ctx.fill();
+      });
+    }
+    
+    // Рисуем основную частицу с эффектом свечения
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = this.color;
+    
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fillStyle = this.color.replace('rgb', 'rgba').replace(')', `, ${this.opacity})`);
+    ctx.fill();
+    
+    // Дополнительное свечение
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size * 2, 0, Math.PI * 2);
+    ctx.fillStyle = this.color.replace('rgb', 'rgba').replace(')', `, ${this.opacity * 0.3})`);
+    ctx.fill();
+    
+    ctx.restore();
+  }
+}
+
+// Класс для фейерверка
+class Firework {
+  constructor(sx, sy, tx, ty) {
+    this.x = sx;
+    this.y = sy;
+    this.sx = sx;
+    this.sy = sy;
+    this.tx = tx;
+    this.ty = ty;
+    this.distanceToTarget = Math.hypot(tx - sx, ty - sy);
+    this.distanceTraveled = 0;
+    this.coordinates = [];
+    this.coordinateCount = 5;
+    while (this.coordinateCount--) {
+      this.coordinates.push([this.x, this.y]);
+    }
+    this.angle = Math.atan2(ty - sy, tx - sx);
+    this.speed = 2;
+    this.acceleration = 1.05;
+    this.brightness = Math.random() * 50 + 50;
+    this.targetRadius = 1;
+  }
+
+  update(index) {
+    this.coordinates.pop();
+    this.coordinates.unshift([this.x, this.y]);
+
+    if (this.targetRadius < 8) {
+      this.targetRadius += 0.3;
+    } else {
+      this.targetRadius = 1;
+    }
+
+    this.speed *= this.acceleration;
+    const vx = Math.cos(this.angle) * this.speed;
+    const vy = Math.sin(this.angle) * this.speed;
+
+    this.distanceTraveled = Math.hypot(this.x + vx - this.sx, this.y + vy - this.sy);
+
+    if (this.distanceTraveled >= this.distanceToTarget) {
+      createParticles(this.tx, this.ty);
+      fireworks.splice(index, 1);
+    } else {
+      this.x += vx;
+      this.y += vy;
+    }
+  }
+
+  draw() {
+    ctx.beginPath();
+    ctx.moveTo(this.coordinates[this.coordinates.length - 1][0], this.coordinates[this.coordinates.length - 1][1]);
+    ctx.lineTo(this.x, this.y);
+    ctx.strokeStyle = `hsl(${Math.random() * 360}, 100%, ${this.brightness}%)`;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(this.tx, this.ty, this.targetRadius, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+}
+
+// Создание частиц взрыва
+function createParticles(x, y) {
+  const particleCount = 100 + Math.floor(Math.random() * 50);
+  const hue = Math.random() * 360;
+  const colors = [
+    `hsl(${hue}, 100%, 50%)`,
+    `hsl(${hue + 30}, 100%, 50%)`,
+    `hsl(${hue - 30}, 100%, 50%)`,
+    `hsl(${hue + 60}, 100%, 50%)`,
+    `hsl(${hue - 60}, 100%, 50%)`
+  ];
+  
+  // Основные частицы
+  for (let i = 0; i < particleCount; i++) {
+    const angle = (Math.PI * 2 / particleCount) * i + Math.random() * 0.5;
+    const velocity = Math.random() * 4 + 2;
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    
+    particles.push(new Particle(
+      x,
+      y,
+      color,
+      {
+        x: Math.cos(angle) * velocity,
+        y: Math.sin(angle) * velocity
+      },
+      Math.random() * 2 + 1,
+      true
+    ));
+  }
+  
+  // Дополнительные искры
+  for (let i = 0; i < 30; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const velocity = Math.random() * 2 + 1;
+    
+    particles.push(new Particle(
+      x,
+      y,
+      '#ffffff',
+      {
+        x: Math.cos(angle) * velocity,
+        y: Math.sin(angle) * velocity
+      },
+      Math.random() * 1 + 0.5,
+      false
+    ));
+  }
+  
+  // Эффект вспышки
+  flashScreen(colors[0]);
+}
+
+// Эффект вспышки
+function flashScreen(color) {
+  ctx.save();
+  ctx.fillStyle = color.replace('hsl', 'hsla').replace(')', ', 0.1)');
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.restore();
+}
+
+// Функция запуска салюта
+function launchFireworks() {
+  // Запускаем сразу несколько залпов
+  for (let i = 0; i < 5; i++) {
+    setTimeout(() => {
+      fireworks.push(new Firework(
+        Math.random() * canvas.width,
+        canvas.height,
+        Math.random() * canvas.width,
+        Math.random() * canvas.height * 0.5
+      ));
+    }, i * 200);
+  }
+  
+  // Автоматический запуск
+  if (!autoLaunchInterval) {
+    autoLaunchInterval = setInterval(() => {
+      if (Math.random() < 0.15) {
+        fireworks.push(new Firework(
+          Math.random() * canvas.width,
+          canvas.height,
+          Math.random() * canvas.width,
+          Math.random() * canvas.height * 0.6
+        ));
+      }
+    }, 500);
+  }
+}
+
+// Анимация
+function animate() {
+  // Создаём эффект следа
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Обновляем и рисуем фейерверки
+  let i = fireworks.length;
+  while (i--) {
+    fireworks[i].draw();
+    fireworks[i].update(i);
+  }
+
+  // Обновляем и рисуем частицы
+  let j = particles.length;
+  while (j--) {
+    particles[j].draw();
+    particles[j].update();
+
+    if (particles[j].opacity <= 0) {
+      particles.splice(j, 1);
+    }
+  }
+
+  requestAnimationFrame(animate);
+}
+
+// Запускаем анимацию
+animate();
+
+// Автозапуск салюта через 2 секунды
+setTimeout(() => {
+  launchFireworks();
+}, 2000);
+
+// Запуск салюта по клику в любом месте
+canvas.style.pointerEvents = 'auto';
+canvas.addEventListener('click', (e) => {
+  fireworks.push(new Firework(
+    e.clientX,
+    canvas.height,
+    e.clientX,
+    e.clientY
+  ));
+});
 </script>
 </body>
 </html>
