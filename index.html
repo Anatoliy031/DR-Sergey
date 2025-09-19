@@ -26,7 +26,9 @@
       width:100%;
       height:100%;
       pointer-events:none;
-      z-index:100;
+      z-index:200;
+      mix-blend-mode: screen;
+      opacity:0.85;
     }
 
     /* Слабая фоновая пыль */
@@ -354,29 +356,29 @@ class Particle {
   draw() {
     ctx.save();
     
-    // Рисуем след
+    // Рисуем след с меньшей прозрачностью
     if (this.trail) {
       this.history.forEach((point, index) => {
         ctx.beginPath();
-        ctx.arc(point.x, point.y, this.size * (index / this.history.length), 0, Math.PI * 2);
-        ctx.fillStyle = this.color.replace('rgb', 'rgba').replace(')', `, ${point.opacity})`);
+        ctx.arc(point.x, point.y, this.size * (index / this.history.length) * 0.8, 0, Math.PI * 2);
+        ctx.fillStyle = this.color.replace('rgb', 'rgba').replace(')', `, ${point.opacity * 0.5})`);
         ctx.fill();
       });
     }
     
     // Рисуем основную частицу с эффектом свечения
-    ctx.shadowBlur = 20;
+    ctx.shadowBlur = 15;
     ctx.shadowColor = this.color;
     
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-    ctx.fillStyle = this.color.replace('rgb', 'rgba').replace(')', `, ${this.opacity})`);
+    ctx.fillStyle = this.color.replace('rgb', 'rgba').replace(')', `, ${this.opacity * 0.8})`);
     ctx.fill();
     
     // Дополнительное свечение
     ctx.beginPath();
-    ctx.arc(this.x, this.y, this.size * 2, 0, Math.PI * 2);
-    ctx.fillStyle = this.color.replace('rgb', 'rgba').replace(')', `, ${this.opacity * 0.3})`);
+    ctx.arc(this.x, this.y, this.size * 1.5, 0, Math.PI * 2);
+    ctx.fillStyle = this.color.replace('rgb', 'rgba').replace(')', `, ${this.opacity * 0.2})`);
     ctx.fill();
     
     ctx.restore();
@@ -446,14 +448,14 @@ class Firework {
 
 // Создание частиц взрыва
 function createParticles(x, y) {
-  const particleCount = 100 + Math.floor(Math.random() * 50);
+  const particleCount = 80 + Math.floor(Math.random() * 40);
   const hue = Math.random() * 360;
   const colors = [
-    `hsl(${hue}, 100%, 50%)`,
-    `hsl(${hue + 30}, 100%, 50%)`,
-    `hsl(${hue - 30}, 100%, 50%)`,
-    `hsl(${hue + 60}, 100%, 50%)`,
-    `hsl(${hue - 60}, 100%, 50%)`
+    `hsl(${hue}, 100%, 70%)`,
+    `hsl(${hue + 30}, 100%, 75%)`,
+    `hsl(${hue - 30}, 100%, 70%)`,
+    `hsl(${hue + 60}, 100%, 80%)`,
+    `hsl(${hue - 60}, 100%, 75%)`
   ];
   
   // Основные частицы
@@ -470,20 +472,20 @@ function createParticles(x, y) {
         x: Math.cos(angle) * velocity,
         y: Math.sin(angle) * velocity
       },
-      Math.random() * 2 + 1,
+      Math.random() * 1.5 + 0.5,
       true
     ));
   }
   
   // Дополнительные искры
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < 20; i++) {
     const angle = Math.random() * Math.PI * 2;
     const velocity = Math.random() * 2 + 1;
     
     particles.push(new Particle(
       x,
       y,
-      '#ffffff',
+      'rgba(255, 255, 255, 0.8)',
       {
         x: Math.cos(angle) * velocity,
         y: Math.sin(angle) * velocity
@@ -500,7 +502,7 @@ function createParticles(x, y) {
 // Эффект вспышки
 function flashScreen(color) {
   ctx.save();
-  ctx.fillStyle = color.replace('hsl', 'hsla').replace(')', ', 0.1)');
+  ctx.fillStyle = color.replace('hsl', 'hsla').replace(')', ', 0.05)');
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.restore();
 }
@@ -536,9 +538,8 @@ function launchFireworks() {
 
 // Анимация
 function animate() {
-  // Создаём эффект следа
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // Очищаем canvas полностью для прозрачности
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   // Обновляем и рисуем фейерверки
   let i = fireworks.length;
