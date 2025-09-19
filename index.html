@@ -4,157 +4,381 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>С днём рождения, Сергей Валентинович!</title>
-  <!-- Подключаем шрифты -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
   <style>
-    /* Базовые переменные и сброс */
-    *{margin:0;padding:0;box-sizing:border-box}
-    :root{--bg1:#667eea;--bg2:#764ba2;--glass:rgba(255,255,255,.95);--accent:#ff6b6b}
-    body{
-      min-height:100vh;
-      background:linear-gradient(135deg,var(--bg1),var(--bg2));
-      font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
-      overflow-x:hidden;
-      position:relative;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
 
-    /* Canvas для салюта */
-    #fireworksCanvas{
-      position:fixed;
-      top:0;
-      left:0;
-      width:100%;
-      height:100%;
-      pointer-events:none;
-      z-index:200;
-      mix-blend-mode: screen;
-      opacity:0.85;
+    :root {
+      --primary: #1a1a2e;
+      --secondary: #16213e;
+      --accent: #e94560;
+      --light: #f5f5f5;
+      --gold: #ffd700;
     }
 
-    /* Слабая фоновая пыль */
-    .particles{position:fixed;inset:0;pointer-events:none;z-index:1}
-    .particle{position:absolute;width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.8);animation:float 15s linear infinite}
-    @keyframes float{0%{transform:translateY(100vh) rotate(0);opacity:0}10%,90%{opacity:1}100%{transform:translateY(-100vh) rotate(360deg);opacity:0}}
-
-    /* Контейнер и поздравительная карточка */
-    .container{position:relative;z-index:10;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
-    .birthday-card{
-      width:min(640px,100%);
-      background:var(--glass);
-      backdrop-filter:blur(20px);
-      border-radius:24px;
-      padding:22px;
-      box-shadow:0 25px 50px rgba(0,0,0,.15),0 0 0 1px rgba(255,255,255,.08);
-      transform:translateY(20px);
-      opacity:0;
-      animation:slideUp .8s ease-out .2s forwards;
-      position:relative;
-      overflow:hidden;
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      overflow-x: hidden;
+      position: relative;
+      color: #fff;
     }
-    @keyframes slideUp{to{transform:translateY(0);opacity:1}}
-    .card-decoration{position:absolute;width:160px;height:160px;border-radius:50%;top:-50px;right:-50px;opacity:.08;background:linear-gradient(45deg,#ff6b6b,#ffd93d);animation:pulse 3s ease-in-out infinite}
-    .card-decoration:nth-child(2){top:auto;bottom:-40px;left:-40px;right:auto;background:linear-gradient(45deg,#4ecdc4,#44a08d);animation-delay:1s}
-    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+
+    /* Canvas для салюта на заднем плане */
+    #fireworksCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Звезды на фоне */
+    .stars {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .star {
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle 3s infinite;
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
+
+    /* Главный контейнер */
+    .container {
+      position: relative;
+      z-index: 10;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    /* Карточка с поздравлением */
+    .birthday-card {
+      width: min(800px, 100%);
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 30px;
+      padding: 40px;
+      box-shadow: 
+        0 25px 50px rgba(0, 0, 0, 0.3),
+        inset 0 0 30px rgba(255, 255, 255, 0.05);
+      transform: translateY(20px);
+      opacity: 0;
+      animation: slideUp 1s ease-out 0.5s forwards;
+    }
+
+    @keyframes slideUp {
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
 
     /* Заголовок */
-    .main-title{
-      font-family:'Dancing Script',cursive;
-      font-size:clamp(2.4rem,6vw,3.8rem);
-      font-weight:700;
-      text-align:center;
-      background:linear-gradient(135deg,var(--bg1),var(--bg2));
-      -webkit-background-clip:text;
-      background-clip:text;
-      -webkit-text-fill-color:transparent;
-      margin-bottom:6px;
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      position: relative;
     }
-    .subtitle{
-      text-align:center;
-      font-size:1.05rem;
-      color:#666;
-      margin-bottom:18px;
-      font-weight:300;
+
+    .main-title {
+      font-family: 'Dancing Script', cursive;
+      font-size: clamp(2.5rem, 7vw, 4rem);
+      font-weight: 700;
+      background: linear-gradient(135deg, #ffd700, #ffed4e, #ffd700);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 10px;
+      filter: drop-shadow(0 2px 10px rgba(255, 215, 0, 0.3));
+      animation: glow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow {
+      from { filter: drop-shadow(0 2px 10px rgba(255, 215, 0, 0.3)); }
+      to { filter: drop-shadow(0 2px 20px rgba(255, 215, 0, 0.5)); }
+    }
+
+    .subtitle {
+      font-size: 1.3rem;
+      color: rgba(255, 255, 255, 0.9);
+      font-weight: 300;
+      letter-spacing: 2px;
     }
 
     /* Аватар */
-    .avatar-container{display:flex;justify-content:center;margin-bottom:18px}
-    .avatar{
-      width:160px;height:160px;border-radius:50%;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;
-      color:#fff;font-size:3rem;font-weight:800;
-      background:linear-gradient(135deg,var(--bg1),var(--bg2));
-      border:6px solid #fff;box-shadow:0 12px 28px rgba(0,0,0,.18);
-      animation:bounce 2s ease-in-out infinite;
+    .avatar-section {
+      display: flex;
+      justify-content: center;
+      margin: 30px 0;
     }
-    .avatar::before{content:"";position:absolute;inset:-50%;background:linear-gradient(45deg,transparent,rgba(255,255,255,.32),transparent);transform:rotate(45deg);animation:shine 3s ease-in-out infinite}
-    .avatar .initials{position:relative;z-index:1}
-    @keyframes bounce{0%,20%,50%,80%,100%{transform:translateY(0)}40%{transform:translateY(-10px)}60%{transform:translateY(-5px)}}
-    @keyframes shine{0%{transform:translate(-100%,-100%) rotate(45deg)}50%{transform:translate(100%,100%) rotate(45deg)}100%{transform:translate(-100%,-100%) rotate(45deg)}}
+
+    .avatar {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      box-shadow: 
+        0 0 40px rgba(102, 126, 234, 0.6),
+        0 0 80px rgba(102, 126, 234, 0.3);
+      animation: float 4s ease-in-out infinite;
+    }
+
+    .avatar::before {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      border-radius: 50%;
+      padding: 2px;
+      background: linear-gradient(45deg, #ffd700, #ff6b6b, #4ecdc4, #ffd700);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      animation: rotate 3s linear infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @keyframes rotate {
+      to { transform: rotate(360deg); }
+    }
+
+    .avatar .initials {
+      font-size: 3.5rem;
+      font-weight: 800;
+      color: white;
+      z-index: 1;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
 
     /* Печатающийся текст */
-    .typewriter{
-      font-size:1.1rem;
-      font-weight:800;
-      color:var(--accent);
-      text-align:center;
-      margin:10px 0 14px;
-      min-height:56px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:0 8px;
+    .typewriter-container {
+      background: rgba(233, 69, 96, 0.1);
+      border: 1px solid rgba(233, 69, 96, 0.3);
+      border-radius: 15px;
+      padding: 20px;
+      margin: 30px 0;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    .cursor{display:inline-block;width:2px;background:var(--accent);margin-left:4px;animation:blink 1s infinite}
-    @keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}
-    .wrong{position:relative;color:#d35c5c;text-decoration:line-through;text-decoration-thickness:2px}
 
-    /* Сообщения и подпись */
-    .message{font-size:1.02rem;line-height:1.65;color:#3a3a3a;text-align:center}
-    .message p{margin-bottom:10px}
-    .signature{text-align:center;font-size:1.08rem;font-weight:700;color:#5263e9;margin-top:16px}
+    .typewriter {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #ff6b6b;
+      text-align: center;
+      text-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1.3em;
+      background: #ff6b6b;
+      margin-left: 4px;
+      animation: blink 1s infinite;
+      vertical-align: text-bottom;
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    .wrong {
+      position: relative;
+      color: #ff4757;
+      text-decoration: line-through;
+      text-decoration-thickness: 2px;
+      opacity: 0.7;
+    }
+
+    /* Основное сообщение */
+    .message-section {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      margin: 30px 0;
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .message {
+      font-size: 1.15rem;
+      line-height: 1.8;
+      color: rgba(255, 255, 255, 0.95);
+      text-align: center;
+    }
+
+    .message p {
+      margin-bottom: 15px;
+      position: relative;
+    }
+
+    .message p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Эмодзи в сообщениях */
+    .message .emoji {
+      display: inline-block;
+      font-size: 1.3em;
+      margin: 0 3px;
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-5px); }
+      60% { transform: translateY(-3px); }
+    }
+
+    /* Подпись */
+    .signature {
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #ffd700;
+      margin-top: 30px;
+      position: relative;
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    }
+
+    .signature::before,
+    .signature::after {
+      content: "✨";
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.5rem;
+      animation: sparkle 1.5s ease-in-out infinite;
+    }
+
+    .signature::before {
+      left: -40px;
+    }
+
+    .signature::after {
+      right: -40px;
+      animation-delay: 0.75s;
+    }
+
+    @keyframes sparkle {
+      0%, 100% { opacity: 0; transform: translateY(-50%) scale(0); }
+      50% { opacity: 1; transform: translateY(-50%) scale(1); }
+    }
 
     /* Кнопка салюта */
-    .fireworks-btn{
-      display:block;
-      margin:20px auto 0;
-      padding:12px 28px;
-      background:linear-gradient(135deg,#ff6b6b,#ff8787);
-      color:white;
-      border:none;
-      border-radius:50px;
-      font-size:1.05rem;
-      font-weight:600;
-      cursor:pointer;
-      box-shadow:0 8px 20px rgba(255,107,107,.3);
-      transition:all .3s ease;
-      position:relative;
-      overflow:hidden;
+    .action-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-top: 30px;
+      flex-wrap: wrap;
     }
-    .fireworks-btn:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(255,107,107,.4)}
-    .fireworks-btn:active{transform:translateY(0)}
-    .fireworks-btn::before{
-      content:"";
-      position:absolute;
-      top:50%;
-      left:50%;
-      width:0;
-      height:0;
-      border-radius:50%;
-      background:rgba(255,255,255,.3);
-      transform:translate(-50%,-50%);
-      transition:width .6s,height .6s;
+
+    .fireworks-btn {
+      padding: 15px 35px;
+      background: linear-gradient(135deg, #ff6b6b, #ff8787);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
     }
-    .fireworks-btn:active::before{width:300px;height:300px}
 
-    /* Падающие эмодзи */
-    .emoji-rain{position:fixed;inset:0;pointer-events:none;z-index:5}
-    .falling-emoji{position:absolute;font-size:22px;animation:fall 4.8s linear forwards}
-    @keyframes fall{from{transform:translateY(-100vh) rotate(0);opacity:1}to{transform:translateY(100vh) rotate(360deg);opacity:0}}
+    .fireworks-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 40px rgba(255, 107, 107, 0.4);
+    }
 
-    @media (max-width:768px){
-      .birthday-card{padding:20px}
-      .avatar{width:132px;height:132px;font-size:2.5rem}
-      .typewriter{font-size:1.02rem;min-height:48px}
-      .message{font-size:.98rem}
+    .fireworks-btn:active {
+      transform: translateY(-1px);
+    }
+
+    .sound-btn {
+      padding: 15px 35px;
+      background: linear-gradient(135deg, #4ecdc4, #44a08d);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(78, 205, 196, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .sound-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 40px rgba(78, 205, 196, 0.4);
+    }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+      .birthday-card {
+        padding: 30px 20px;
+      }
+      
+      .main-title {
+        font-size: 2.5rem;
+      }
+      
+      .avatar {
+        width: 150px;
+        height: 150px;
+      }
+      
+      .avatar .initials {
+        font-size: 2.5rem;
+      }
+      
+      .message {
+        font-size: 1.05rem;
+      }
+      
+      .signature::before,
+      .signature::after {
+        display: none;
+      }
     }
   </style>
 </head>
@@ -162,150 +386,167 @@
   <!-- Canvas для салюта -->
   <canvas id="fireworksCanvas"></canvas>
   
-  <!-- Фоновая пыль -->
-  <div class="particles" id="particles"></div>
-  <!-- Падающие эмодзи -->
-  <div class="emoji-rain" id="emojiRain"></div>
+  <!-- Звезды на фоне -->
+  <div class="stars" id="stars"></div>
 
   <div class="container">
     <div class="birthday-card">
-      <div class="card-decoration"></div>
-      <div class="card-decoration"></div>
-      
-      <h1 class="main-title">С днём рождения!</h1>
-      <p class="subtitle">Сергей Валентинович</p>
-      
-      <div class="avatar-container">
-        <div class="avatar" id="avatar"><span class="initials">СВ</span></div>
+      <div class="header">
+        <h1 class="main-title">С днём рождения!</h1>
+        <p class="subtitle">Сергей Валентинович</p>
       </div>
       
-      <div class="typewriter"><span id="typewriter-text"></span><span class="cursor">&nbsp;</span></div>
+      <div class="avatar-section">
+        <div class="avatar" id="avatar">
+          <span class="initials">СВ</span>
+        </div>
+      </div>
       
-      <div class="message">
-        <p>Желаем мощного здоровья, лёгких побед и ровного огня в делах! 🔥</p>
-        <p>Пусть банька всегда в тонусе, мангал — без дыма в глаза, а выходные — сплошные «вау-моменты». ✨</p>
-        <p>Пусть новый год жизни качает как любимый трек: громко, чисто и на повторе! Больше смеха, вкусных встреч и поводов для гордости! 🎵</p>
+      <div class="typewriter-container">
+        <div class="typewriter">
+          <span id="typewriter-text"></span><span class="cursor"></span>
+        </div>
+      </div>
+      
+      <div class="message-section">
+        <div class="message">
+          <p>Желаем мощного здоровья, лёгких побед и ровного огня в делах! <span class="emoji">🔥</span></p>
+          <p>Пусть банька всегда в тонусе, мангал — без дыма в глаза, а выходные — сплошные «вау-моменты». <span class="emoji">✨</span></p>
+          <p>Пусть новый год жизни качает как любимый трек: громко, чисто и на повторе! Больше смеха, вкусных встреч и поводов для гордости! <span class="emoji">🎵</span></p>
+        </div>
       </div>
       
       <div class="signature">С теплом — Анатолий и Ирина ❤️</div>
       
-      <button class="fireworks-btn" onclick="launchFireworks()">🎆 Запустить салют!</button>
+      <div class="action-buttons">
+        <button class="fireworks-btn" onclick="launchMegaFireworks()">🎆 Праздничный салют!</button>
+        <button class="sound-btn" onclick="toggleSound()">🎵 Музыка</button>
+      </div>
     </div>
   </div>
 
 <script>
-/*
-  Фоновая пыль: создаём маленькие точки, которые медленно движутся сверху вниз.
-*/
-(function(){
-  const wrap=document.getElementById('particles');
-  const count=48;
-  for(let i=0;i<count;i++){
-    const d=document.createElement('div');
-    d.className='particle';
-    d.style.left=(Math.random()*100)+'%';
-    d.style.animationDelay=(Math.random()*15)+'s';
-    d.style.animationDuration=(14+Math.random()*10)+'s';
-    wrap.appendChild(d);
+// Создаем звездное небо
+(function() {
+  const starsContainer = document.getElementById('stars');
+  const starCount = 100;
+  
+  for (let i = 0; i < starCount; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    star.style.width = star.style.height = Math.random() * 3 + 'px';
+    star.style.left = Math.random() * 100 + '%';
+    star.style.top = Math.random() * 100 + '%';
+    star.style.animationDelay = Math.random() * 3 + 's';
+    star.style.animationDuration = (Math.random() * 3 + 2) + 's';
+    starsContainer.appendChild(star);
   }
 })();
 
-/*
-  Падающие эмодзи: случайные символы падают сверху вниз, создавая атмосферу праздника.
-*/
-(function(){
-  const emojis=['🎉','🎂','🎈','🎁','✨','🌟','💫','🎊'];
-  const rain=document.getElementById('emojiRain');
-  setInterval(()=>{
-    const e=document.createElement('div');
-    e.className='falling-emoji';
-    e.textContent=emojis[Math.floor(Math.random()*emojis.length)];
-    e.style.left=(Math.random()*100)+'%';
-    e.style.animationDuration=(3.6+Math.random()*2.2)+'s';
-    rain.appendChild(e);
-    setTimeout(()=>e.remove(),5200);
-  },380);
-})();
-
-/*
-  Загрузка аватара: если на сервере есть фотография, она будет показана вместо инициалов.
-*/
-(function(){
-  const avatar=document.getElementById('avatar');
-  const initials=avatar.querySelector('.initials');
-  const candidates=[
-    "./sergey.jpg","./sergey.JPG","./sergey.jpeg","./sergey.JPEG",
-    "./sergey.png","./sergey.PNG","./sergey.webp","./sergey.WEBP",
-    "sergey.jpg","sergey.JPG","sergey.jpeg","sergey.JPEG",
-    "sergey.png","sergey.PNG","sergey.webp","sergey.WEBP",
-    "./photo.jpg","./photo.JPG","./photo.jpeg","./photo.JPEG",
-    "./photo.png","./photo.PNG","photo.jpg","photo.JPG",
-    "./image.jpg","./image.JPG","image.jpg","image.JPG"
+// Загрузка аватара
+(function() {
+  const avatar = document.getElementById('avatar');
+  const initials = avatar.querySelector('.initials');
+  const imageUrls = [
+    './sergey.jpg', './sergey.JPG', './sergey.jpeg', './sergey.JPEG',
+    './sergey.png', './sergey.PNG', './sergey.webp', './sergey.WEBP',
+    './photo.jpg', './photo.JPG', './avatar.jpg', './avatar.JPG'
   ];
-  let i=0;
-  function tryNext(){
-    if(i>=candidates.length) return;
-    const img=new Image();
-    img.onload=function(){
-      initials.style.display='none';
-      Object.assign(img.style,{
-        position:'absolute',inset:'0',width:'100%',height:'100%',objectFit:'cover',borderRadius:'50%',zIndex:'0',opacity:'0',transition:'opacity .5s'
-      });
+  
+  let currentIndex = 0;
+  function tryLoadImage() {
+    if (currentIndex >= imageUrls.length) return;
+    
+    const img = new Image();
+    img.onload = function() {
+      initials.style.display = 'none';
+      img.style.cssText = `
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+        z-index: 0;
+      `;
       avatar.appendChild(img);
-      requestAnimationFrame(()=>img.style.opacity='1');
     };
-    img.onerror=function(){ i++; setTimeout(tryNext,10); };
-    img.src=candidates[i] + "?v=" + Date.now();
+    img.onerror = function() {
+      currentIndex++;
+      tryLoadImage();
+    };
+    img.src = imageUrls[currentIndex];
   }
-  setTimeout(tryNext,120);
+  
+  setTimeout(tryLoadImage, 100);
 })();
 
-/*
-  Печатный эффект: плавно выводит строки, сначала печатая «ошибочный» вариант слова, затем стирая его и печатая правильный. Для каждой строки используется пауза.
-*/
-(function(){
-  const el=document.getElementById('typewriter-text');
-  const lines=[
-    ["Желаем ", "обычного", "крепкого", " здоровья и бодрого настроя! 💪"],
-    ["Пусть выходные будут ", "обычными", "яркими", " и запоминающимися! ✨"],
-    ["Мангал — ", "дымный", "бездымный", ", а мясо — сочное! 🍖"],
-    ["В делах — ", "пауза", "ускорение", " и уверенные победы! 🚀"]
+// Печатающийся текст
+(function() {
+  const el = document.getElementById('typewriter-text');
+  const phrases = [
+    ["Желаем ", "обычного", "крепкого", " здоровья и энергии! 💪"],
+    ["Пусть каждый день приносит ", "рутину", "радость", " и вдохновение! ⭐"],
+    ["В делах — ", "застой", "прорыв", " и новые вершины! 🚀"],
+    ["А жизнь будет ", "серой", "яркой", " как праздничный салют! 🎆"]
   ];
-  const typeDelay=70, eraseDelay=45, holdWrong=700, holdLine=1200, gap=260;
-  function typeText(text,start){ return new Promise(res=>{
-    let i=start??0;
-    function step(){ el.textContent=text.slice(0,i+1); i++; if(i<text.length) setTimeout(step,typeDelay); else res(); }
-    if(text.length) setTimeout(step,typeDelay); else res();
-  }); }
-  function wrapWrong(pre,wrong){ el.innerHTML = `${pre}<span class="wrong" id="wrong-span">${wrong}</span>`; }
-  function eraseWrong(){ return new Promise(res=>{
-    const span=document.getElementById('wrong-span'); if(!span) return res();
-    (function step(){ const t=span.textContent; if(t.length){ span.textContent=t.slice(0,-1); setTimeout(step,eraseDelay); } else { span.remove(); res(); }})();
-  }); }
-  async function play([pre,wrong,right,post]){
-    el.textContent="";
-    await new Promise(r=>setTimeout(r,gap));
-    await typeText(pre+wrong,0);
-    wrapWrong(pre,wrong);
-    await new Promise(r=>setTimeout(r,holdWrong));
-    await eraseWrong();
-    await typeText(pre+right,0);
-    await typeText(pre+right+post,(pre+right).length);
-    await new Promise(r=>setTimeout(r,holdLine));
+  
+  const typeDelay = 60;
+  const eraseDelay = 40;
+  const pauseBeforeErase = 800;
+  const pauseAfterPhrase = 1500;
+  
+  async function typeText(text, startIndex = 0) {
+    for (let i = startIndex; i < text.length; i++) {
+      el.textContent = text.slice(0, i + 1);
+      await new Promise(resolve => setTimeout(resolve, typeDelay));
+    }
   }
-  (async function loop(){ let idx=0; while(true){ await play(lines[idx%lines.length]); idx++; }})();
+  
+  async function markWrong(prefix, wrongWord) {
+    el.innerHTML = `${prefix}<span class="wrong" id="wrong-word">${wrongWord}</span>`;
+  }
+  
+  async function eraseWrong() {
+    const wrongSpan = document.getElementById('wrong-word');
+    if (!wrongSpan) return;
+    
+    const text = wrongSpan.textContent;
+    for (let i = text.length; i > 0; i--) {
+      wrongSpan.textContent = text.slice(0, i - 1);
+      await new Promise(resolve => setTimeout(resolve, eraseDelay));
+    }
+    wrongSpan.remove();
+  }
+  
+  async function showPhrase([prefix, wrong, right, suffix]) {
+    el.textContent = '';
+    await typeText(prefix + wrong);
+    await new Promise(resolve => setTimeout(resolve, pauseBeforeErase));
+    markWrong(prefix, wrong);
+    await new Promise(resolve => setTimeout(resolve, 300));
+    await eraseWrong();
+    await typeText(prefix + right);
+    await typeText(prefix + right + suffix, (prefix + right).length);
+    await new Promise(resolve => setTimeout(resolve, pauseAfterPhrase));
+  }
+  
+  (async function loop() {
+    let index = 0;
+    while (true) {
+      await showPhrase(phrases[index % phrases.length]);
+      index++;
+    }
+  })();
 })();
 
-/*
-  РЕАЛИСТИЧНЫЙ САЛЮТ
-*/
+// САЛЮТ
 const canvas = document.getElementById('fireworksCanvas');
 const ctx = canvas.getContext('2d');
 let fireworks = [];
 let particles = [];
-let autoLaunchInterval;
+let mouseX = 0;
+let mouseY = 0;
 
-// Настройка размера canvas
 function resizeCanvas() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -313,79 +554,45 @@ function resizeCanvas() {
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
-// Класс для частиц
+// Отслеживание мыши
+document.addEventListener('mousemove', (e) => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+});
+
 class Particle {
-  constructor(x, y, color, velocity, size = 3, trail = true) {
+  constructor(x, y, color, velocity, size = 2) {
     this.x = x;
     this.y = y;
     this.color = color;
     this.velocity = velocity;
     this.size = size;
-    this.trail = trail;
     this.opacity = 1;
-    this.decay = Math.random() * 0.015 + 0.003;
-    this.gravity = 0.1;
-    this.history = [];
-    this.maxHistory = trail ? 15 : 0;
+    this.decay = Math.random() * 0.02 + 0.005;
+    this.gravity = 0.05;
   }
 
   update() {
-    // Сохраняем историю для следа
-    if (this.trail && this.history.length < this.maxHistory) {
-      this.history.push({ x: this.x, y: this.y, opacity: this.opacity });
-    }
-
-    // Обновляем позицию
     this.x += this.velocity.x;
     this.y += this.velocity.y;
-    
-    // Гравитация и затухание
     this.velocity.y += this.gravity;
     this.velocity.x *= 0.99;
-    this.velocity.y *= 0.99;
-    
-    // Уменьшаем прозрачность
     this.opacity -= this.decay;
-    
-    // Обновляем историю
-    this.history.forEach((point, index) => {
-      point.opacity *= 0.95;
-    });
   }
 
   draw() {
     ctx.save();
-    
-    // Рисуем след с меньшей прозрачностью
-    if (this.trail) {
-      this.history.forEach((point, index) => {
-        ctx.beginPath();
-        ctx.arc(point.x, point.y, this.size * (index / this.history.length) * 0.8, 0, Math.PI * 2);
-        ctx.fillStyle = this.color.replace('rgb', 'rgba').replace(')', `, ${point.opacity * 0.5})`);
-        ctx.fill();
-      });
-    }
-    
-    // Рисуем основную частицу с эффектом свечения
-    ctx.shadowBlur = 15;
+    ctx.globalAlpha = this.opacity;
+    ctx.fillStyle = this.color;
+    ctx.shadowBlur = 10;
     ctx.shadowColor = this.color;
-    
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-    ctx.fillStyle = this.color.replace('rgb', 'rgba').replace(')', `, ${this.opacity * 0.8})`);
     ctx.fill();
-    
-    // Дополнительное свечение
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.size * 1.5, 0, Math.PI * 2);
-    ctx.fillStyle = this.color.replace('rgb', 'rgba').replace(')', `, ${this.opacity * 0.2})`);
-    ctx.fill();
-    
     ctx.restore();
   }
 }
 
-// Класс для фейерверка
 class Firework {
   constructor(sx, sy, tx, ty) {
     this.x = sx;
@@ -396,21 +603,21 @@ class Firework {
     this.ty = ty;
     this.distanceToTarget = Math.hypot(tx - sx, ty - sy);
     this.distanceTraveled = 0;
-    this.coordinates = [];
-    this.coordinateCount = 5;
-    while (this.coordinateCount--) {
-      this.coordinates.push([this.x, this.y]);
-    }
+    this.trail = [];
+    this.trailLength = 10;
     this.angle = Math.atan2(ty - sy, tx - sx);
     this.speed = 2;
     this.acceleration = 1.05;
     this.brightness = Math.random() * 50 + 50;
     this.targetRadius = 1;
+    this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
   }
 
   update(index) {
-    this.coordinates.pop();
-    this.coordinates.unshift([this.x, this.y]);
+    this.trail.push({ x: this.x, y: this.y });
+    if (this.trail.length > this.trailLength) {
+      this.trail.shift();
+    }
 
     if (this.targetRadius < 8) {
       this.targetRadius += 0.3;
@@ -434,121 +641,106 @@ class Firework {
   }
 
   draw() {
-    ctx.beginPath();
-    ctx.moveTo(this.coordinates[this.coordinates.length - 1][0], this.coordinates[this.coordinates.length - 1][1]);
-    ctx.lineTo(this.x, this.y);
-    ctx.strokeStyle = `hsl(${Math.random() * 360}, 100%, ${this.brightness}%)`;
-    ctx.stroke();
+    // Рисуем след
+    ctx.strokeStyle = this.color;
+    ctx.lineWidth = 2;
+    
+    for (let i = 0; i < this.trail.length; i++) {
+      ctx.save();
+      ctx.globalAlpha = i / this.trail.length;
+      ctx.beginPath();
+      ctx.arc(this.trail[i].x, this.trail[i].y, 1, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
 
+    // Рисуем ракету
+    ctx.save();
+    ctx.fillStyle = this.color;
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = this.color;
     ctx.beginPath();
-    ctx.arc(this.tx, this.ty, this.targetRadius, 0, Math.PI * 2);
-    ctx.stroke();
+    ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
   }
 }
 
-// Создание частиц взрыва
 function createParticles(x, y) {
   const particleCount = 80 + Math.floor(Math.random() * 40);
   const hue = Math.random() * 360;
-  const colors = [
-    `hsl(${hue}, 100%, 70%)`,
-    `hsl(${hue + 30}, 100%, 75%)`,
-    `hsl(${hue - 30}, 100%, 70%)`,
-    `hsl(${hue + 60}, 100%, 80%)`,
-    `hsl(${hue - 60}, 100%, 75%)`
-  ];
   
-  // Основные частицы
   for (let i = 0; i < particleCount; i++) {
-    const angle = (Math.PI * 2 / particleCount) * i + Math.random() * 0.5;
-    const velocity = Math.random() * 4 + 2;
-    const color = colors[Math.floor(Math.random() * colors.length)];
+    const angle = (Math.PI * 2 / particleCount) * i;
+    const velocity = Math.random() * 3 + 2;
+    const color = `hsl(${hue + Math.random() * 60 - 30}, 100%, ${50 + Math.random() * 20}%)`;
     
     particles.push(new Particle(
       x,
       y,
       color,
       {
-        x: Math.cos(angle) * velocity,
-        y: Math.sin(angle) * velocity
+        x: Math.cos(angle) * velocity * (0.5 + Math.random()),
+        y: Math.sin(angle) * velocity * (0.5 + Math.random())
       },
-      Math.random() * 1.5 + 0.5,
-      true
+      Math.random() * 2 + 1
     ));
   }
   
-  // Дополнительные искры
+  // Центральная вспышка
   for (let i = 0; i < 20; i++) {
     const angle = Math.random() * Math.PI * 2;
-    const velocity = Math.random() * 2 + 1;
+    const velocity = Math.random() * 2;
     
     particles.push(new Particle(
       x,
       y,
-      'rgba(255, 255, 255, 0.8)',
+      '#ffffff',
       {
         x: Math.cos(angle) * velocity,
         y: Math.sin(angle) * velocity
       },
-      Math.random() * 1 + 0.5,
-      false
+      Math.random() + 0.5
     ));
   }
-  
-  // Эффект вспышки
-  flashScreen(colors[0]);
 }
 
-// Эффект вспышки
-function flashScreen(color) {
-  ctx.save();
-  ctx.fillStyle = color.replace('hsl', 'hsla').replace(')', ', 0.05)');
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.restore();
-}
-
-// Функция запуска салюта
-function launchFireworks() {
-  // Запускаем сразу несколько залпов
-  for (let i = 0; i < 5; i++) {
+function launchMegaFireworks() {
+  const launches = 8;
+  for (let i = 0; i < launches; i++) {
     setTimeout(() => {
-      fireworks.push(new Firework(
-        Math.random() * canvas.width,
-        canvas.height,
-        Math.random() * canvas.width,
-        Math.random() * canvas.height * 0.5
-      ));
+      const startX = Math.random() * canvas.width;
+      const startY = canvas.height;
+      const endX = Math.random() * canvas.width;
+      const endY = Math.random() * canvas.height * 0.5 + 50;
+      
+      fireworks.push(new Firework(startX, startY, endX, endY));
     }, i * 200);
   }
-  
-  // Автоматический запуск
-  if (!autoLaunchInterval) {
-    autoLaunchInterval = setInterval(() => {
-      if (Math.random() < 0.15) {
-        fireworks.push(new Firework(
-          Math.random() * canvas.width,
-          canvas.height,
-          Math.random() * canvas.width,
-          Math.random() * canvas.height * 0.6
-        ));
-      }
-    }, 500);
-  }
 }
 
-// Анимация
-function animate() {
-  // Очищаем canvas полностью для прозрачности
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+// Автоматический запуск
+setInterval(() => {
+  if (Math.random() < 0.05) {
+    const startX = Math.random() * canvas.width;
+    const startY = canvas.height;
+    const endX = Math.random() * canvas.width;
+    const endY = Math.random() * canvas.height * 0.6 + 50;
+    
+    fireworks.push(new Firework(startX, startY, endX, endY));
+  }
+}, 1000);
 
-  // Обновляем и рисуем фейерверки
+function animate() {
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
   let i = fireworks.length;
   while (i--) {
     fireworks[i].draw();
     fireworks[i].update(i);
   }
 
-  // Обновляем и рисуем частицы
   let j = particles.length;
   while (j--) {
     particles[j].draw();
@@ -562,24 +754,30 @@ function animate() {
   requestAnimationFrame(animate);
 }
 
-// Запускаем анимацию
 animate();
 
-// Автозапуск салюта через 2 секунды
-setTimeout(() => {
-  launchFireworks();
-}, 2000);
-
-// Запуск салюта по клику в любом месте
+// Запуск салюта по клику
 canvas.style.pointerEvents = 'auto';
 canvas.addEventListener('click', (e) => {
   fireworks.push(new Firework(
-    e.clientX,
+    Math.random() * canvas.width,
     canvas.height,
     e.clientX,
     e.clientY
   ));
 });
+
+// Первый автоматический салют
+setTimeout(launchMegaFireworks, 1500);
+
+// Музыка (заглушка)
+let soundOn = false;
+function toggleSound() {
+  soundOn = !soundOn;
+  const btn = document.querySelector('.sound-btn');
+  btn.textContent = soundOn ? '🔇 Выключить' : '🎵 Музыка';
+  // Здесь можно добавить настоящее воспроизведение звука
+}
 </script>
 </body>
 </html>
