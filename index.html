@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <title>С днём рождения, Сергей Валентинович!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        :root{
+          --bg1:#667eea; --bg2:#764ba2;
+          --glass-bg: rgba(255,255,255,.95);
+          --accent:#ff6b6b;
+        }
+        body{
+          min-height:100vh;
+          background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 100%);
+          overflow-x:hidden;
+          font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+          position:relative;
+        }
+        /* ===== Fireworks Canvas (Front) ===== */
+        #fw-canvas{
+          position:fixed; inset:0;
+          width:100%; height:100%;
+          z-index:999; pointer-events:none;
+        }
+
+        /* ===== Subtle background particles (Back) ===== */
+        .particles{ position:fixed; inset:0; pointer-events:none; z-index:1; }
+        .particle{
+          position:absolute; width:4px; height:4px; border-radius:50%;
+          background:rgba(255,255,255,.8); animation:float 15s linear infinite;
+        }
+        @keyframes float{
+          0%{ transform:translateY(100vh) rotate(0); opacity:0;}
+          10%{opacity:1;}
+          90%{opacity:1;}
+          100%{ transform:translateY(-100vh) rotate(360deg); opacity:0;}
+        }
+
+        /* ===== Main card ===== */
+        .container{
+          position:relative; z-index:10;
+          min-height:100vh; display:flex; align-items:center; justify-content:center; padding:16px;
+        }
+        .birthday-card{
+          width:min(640px,100%);
+          background:var(--glass-bg); backdrop-filter: blur(20px);
+          border-radius:24px; padding:28px;
+          box-shadow:0 25px 50px rgba(0,0,0,.15), 0 0 0 1px rgba(255,255,255,.08);
+          transform: translateY(20px); opacity:0; animation: slideUp .8s ease-out .2s forwards;
+          position:relative; overflow:hidden;
+        }
+        @keyframes slideUp{ to{ transform:translateY(0); opacity:1; } }
+        .card-decoration{
+          position:absolute; width:160px; height:160px; border-radius:50%;
+          top:-50px; right:-50px; opacity:.08;
+          background:linear-gradient(45deg,#ff6b6b,#ffd93d); animation:pulse 3s ease-in-out infinite;
+        }
+        .card-decoration:nth-child(2){
+          top:auto; bottom:-40px; left:-40px; right:auto;
+          background:linear-gradient(45deg,#4ecdc4,#44a08d); animation-delay:1s;
+        }
+        @keyframes pulse{ 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+
+        .main-title{
+          font-family:'Dancing Script', cursive;
+          font-size: clamp(2.4rem, 6vw, 3.8rem);
+          font-weight:700; text-align:center;
+          background: linear-gradient(135deg, var(--bg1), var(--bg2));
+          -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+          margin-bottom:6px;
+        }
+        .subtitle{ text-align:center; font-size:1.05rem; color:#666; margin-bottom:18px; font-weight:300; }
+
+        .avatar-container{ display:flex; justify-content:center; margin-bottom:18px;}
+        .avatar{
+          width:160px; height:160px; border-radius:50%; position:relative; overflow:hidden;
+          display:flex; align-items:center; justify-content:center; color:#fff; font-size:3.2rem; font-weight:800;
+          background:linear-gradient(135deg,var(--bg1),var(--bg2));
+          border:6px solid #fff; box-shadow:0 12px 28px rgba(0,0,0,.18);
+          animation:bounce 2s ease-in-out infinite;
+        }
+        .avatar::before{
+          content:""; position:absolute; inset:-50%;
+          background:linear-gradient(45deg,transparent,rgba(255,255,255,.32),transparent);
+          transform: rotate(45deg); animation:shine 3s ease-in-out infinite;
+        }
+        .avatar .initials{ position:relative; z-index:1; }
+        @keyframes bounce{0%,20%,50%,80%,100%{transform:translateY(0)}40%{transform:translateY(-10px)}60%{transform:translateY(-5px)}}
+        @keyframes shine{0%{transform:translate(-100%,-100%) rotate(45deg)}50%{transform:translate(100%,100%) rotate(45deg)}100%{transform:translate(-100%,-100%) rotate(45deg)}}
+
+        /* ===== Typewriter with gag ===== */
+        .typewriter{
+          font-size:1.18rem; font-weight:700; color:var(--accent);
+          text-align:center; margin: 10px 0 14px; min-height:56px;
+          display:flex; align-items:center; justify-content:center; padding:0 8px;
+        }
+        .cursor{ display:inline-block; width:2px; background:var(--accent); margin-left:4px; animation:blink 1s infinite; }
+        @keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}
+
+        .message{ font-size:1.02rem; line-height:1.65; color:#3a3a3a; text-align:center; }
+        .message p{ margin-bottom:10px; }
+        .signature{ text-align:center; font-size:1.08rem; font-weight:700; color:#5263e9; margin-top:16px; }
+
+        .fireworks-btn{
+          display:block; margin:18px auto 4px; padding:13px 26px;
+          background:linear-gradient(135deg,#ff6b6b,#ffd93d); color:#fff; border:0; border-radius:999px;
+          font-size:1rem; font-weight:700; cursor:pointer; transition:transform .2s ease, box-shadow .2s ease;
+          box-shadow:0 10px 22px rgba(255,107,107,.3);
+        }
+        .fireworks-btn:hover{ transform:translateY(-2px); box-shadow:0 14px 28px rgba(255,107,107,.42);}
+        .fireworks-btn:active{ transform:translateY(0); }
+
+        /* Emoji rain (subtle) */
+        .emoji-rain{ position:fixed; inset:0; pointer-events:none; z-index:5; }
+        .falling-emoji{ position:absolute; font-size:22px; animation:fall 4.8s linear forwards; }
+        @keyframes fall{ from{ transform:translateY(-100vh) rotate(0); opacity:1;} to{ transform:translateY(100vh) rotate(360deg); opacity:0;} }
+
+        @media (max-width: 768px){
+          .birthday-card{ padding:22px; }
+          .avatar{ width:130px; height:130px; font-size:2.6rem; }
+          .typewriter{ font-size:1.04rem; min-height:48px; }
+          .message{ font-size:.98rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Foreground realistic fireworks -->
+    <canvas id="fw-canvas"></canvas>
+
+    <!-- Subtle background particles -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Falling emoji -->
+    <div class="emoji-rain" id="emojiRain"></div>
+
+    <div class="container">
+      <div class="birthday-card">
+        <div class="card-decoration"></div>
+        <div class="card-decoration"></div>
+
+        <h1 class="main-title">С днём рождения!</h1>
+        <p class="subtitle">Сергей Валентинович</p>
+
+        <div class="avatar-container">
+          <div class="avatar" id="avatar">
+            <span class="initials">СВ</span>
+          </div>
+        </div>
+
+        <div class="typewriter">
+          <span id="typewriter-text"></span><span class="cursor">&nbsp;</span>
+        </div>
+
+        <div class="message">
+          <p>Желаем мощного здоровья, лёгких побед и ровного огня в делах! 🔥</p>
+          <p>Пусть банька всегда в тонусе, мангал — без дыма в глаза, а выходные — сплошные «вау-моменты». ✨</p>
+          <p>Пусть новый год жизни качает как любимый трек: громко, чисто и на повторе! Больше смеха, вкусных встреч и поводов для гордости! 🎵</p>
+        </div>
+
+        <div class="signature">С теплом — Анатолий и Ирина ❤️</div>
+
+        <button class="fireworks-btn" id="fw-btn">🎆 Запустить салют!</button>
+      </div>
+    </div>
+
+<script>
+/* ===== Subtle particles (background) ===== */
+(function createParticles(){
+  const wrap = document.getElementById('particles');
+  const n = 48;
+  for(let i=0;i<n;i++){
+    const d=document.createElement('div');
+    d.className='particle';
+    d.style.left = (Math.random()*100)+'%';
+    d.style.animationDelay = (Math.random()*15)+'s';
+    d.style.animationDuration = (14+Math.random()*10)+'s';
+    wrap.appendChild(d);
+  }
+})();
+
+/* ===== Emoji rain (light) ===== */
+(function createFallingEmoji(){
+  const emojis = ['🎉','🎂','🎈','🎁','✨','🌟','💫','🎊'];
+  const rain = document.getElementById('emojiRain');
+  function drop(){
+    const e=document.createElement('div');
+    e.className='falling-emoji';
+    e.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+    e.style.left = (Math.random()*100)+'%';
+    e.style.animationDuration = (3.6+Math.random()*2.2)+'s';
+    rain.appendChild(e);
+    setTimeout(()=>e.remove(), 5200);
+  }
+  setInterval(drop, 380);
+})();
+
+/* ===== Avatar photo loader ===== */
+(function tryLoadPhoto(){
+  const avatar = document.getElementById('avatar');
+  const initials = avatar.querySelector('.initials');
+  const candidates = [
+    "./sergey.jpg","./sergey.JPG","./sergey.jpeg","./sergey.JPEG",
+    "./sergey.png","./sergey.PNG","./sergey.webp","./sergey.WEBP",
+    "sergey.jpg","sergey.JPG","sergey.jpeg","sergey.JPEG",
+    "sergey.png","sergey.PNG","sergey.webp","sergey.WEBP",
+    "./photo.jpg","./photo.JPG","./photo.jpeg","./photo.JPEG",
+    "./photo.png","./photo.PNG","photo.jpg","photo.JPG",
+    "./image.jpg","./image.JPG","image.jpg","image.JPG"
+  ];
+  let i=0;
+  function next(){
+    if(i>=candidates.length) return;
+    const img = new Image();
+    img.onload = () =>{
+      initials.style.display='none';
+      Object.assign(img.style,{
+        position:'absolute', inset:'0', width:'100%', height:'100%',
+        objectFit:'cover', borderRadius:'50%', zIndex:'0', opacity:'0',
+        transition:'opacity .5s ease'
+      });
+      avatar.appendChild(img);
+      requestAnimationFrame(()=>img.style.opacity='1');
+    };
+    img.onerror = ()=>{ i++; setTimeout(next,10); };
+    img.src = candidates[i] + "?v=" + Date.now();
+  }
+  setTimeout(next,120);
+})();
+
+/* ===== Typewriter with "opposite word" gag ===== */
+(function typeWriterGag(){
+  const el = document.getElementById('typewriter-text');
+
+  // Каждая запись: [префикс, неверное слово, верное слово, постфикс]
+  const lines = [
+    ["Сегодня желаем ", "слабого", "мощного", " здоровья и бодрого духа! 💪"],
+    ["Пусть выходные будут ", "скучными", "яркими", " и запоминающимися! ✨"],
+    ["Мангал — ", "дымный", "бездымный", ", а мясо — сочное! 🍖"],
+    ["В делах — ", "тормоза", "ускорение", " и уверенные победы! 🚀"]
+  ];
+
+  const typeDelay = 70;        // скорость набора
+  const eraseDelay = 45;       // скорость стирания неверного слова
+  const holdAfterWrong = 650;  // пауза, показываем «ошибку»
+  const holdAfterLine  = 1200; // пауза после всей строки
+  const gapDelay = 300;        // пауза перед началом новой строки
+
+  let lineIdx = 0;
+
+  function typeText(target, text, from=0, speed=typeDelay){
+    return new Promise(resolve=>{
+      let i=from;
+      function step(){
+        target.textContent = text.slice(0,i+1);
+        i++;
+        if(i<text.length) setTimeout(step, speed);
+        else resolve();
+      }
+      if(text.length===0) resolve(); else setTimeout(step, speed);
+    });
+  }
+
+  function eraseChars(target, count, speed=eraseDelay){
+    return new Promise(resolve=>{
+      function step(){
+        const t = target.textContent;
+        target.textContent = t.slice(0, t.length-1);
+        count--;
+        if(count>0) setTimeout(step, speed);
+        else resolve();
+      }
+      if(count<=0) resolve(); else setTimeout(step, speed);
+    });
+  }
+
+  async function playLine([pre, wrong, right, post]){
+    el.textContent = ""; // очистили строку
+    await new Promise(r=>setTimeout(r,gapDelay));
+
+    // печатаем префикс
+    await typeText(el, pre);
+    // печатаем неверное слово
+    const beforeWrongLen = el.textContent.length;
+    await typeText(el, pre + wrong, el.textContent.length);
+    await new Promise(r=>setTimeout(r, holdAfterWrong)); // пауза «спалился»
+    // стираем только неверное слово
+    await eraseChars(el, wrong.length);
+    // печатаем верное слово
+    await typeText(el, el.textContent + right, el.textContent.length);
+    // допечатываем постфикс
+    await typeText(el, el.textContent + post, el.textContent.length);
+    await new Promise(r=>setTimeout(r, holdAfterLine));
+  }
+
+  async function loop(){
+    while(true){
+      const item = lines[lineIdx % lines.length];
+      await playLine(item);
+      lineIdx++;
+    }
+  }
+  loop();
+})();
+
+/* ===== Realistic Fireworks (Canvas, physics) ===== */
+(function fireworks(){
+  const canvas = document.getElementById('fw-canvas');
+  const ctx = canvas.getContext('2d', { alpha:true });
+  let W=0,H=0, DPR=1;
+  function resize(){
+    DPR = Math.min(window.devicePixelRatio||1, 2);
+    W = canvas.width = Math.floor(innerWidth * DPR);
+    H = canvas.height = Math.floor(innerHeight * DPR);
+    canvas.style.width = innerWidth+'px';
+    canvas.style.height = innerHeight+'px';
+  }
+  resize(); addEventListener('resize', resize);
+
+  // Settings
+  const rockets = [];
+  const particles = [];
+  const MAX_PARTICLES = innerWidth < 480 ? 500 : 900;
+  const GRAV = 0.06 * DPR;
+  const FRICTION = 0.985;
+  const PARTICLE_FRICTION = 0.972;
+  const PARTICLE_GRAV = 0.075 * DPR;
+  let lastTime = 0;
+
+  function rand(min,max){ return Math.random()*(max-min)+min; }
+  function hsvToRgb(h,s,v){
+    let f=(n,k=(n+h/60)%6)=>v-v*s*Math.max(Math.min(k,4-k,1),0);
+    return [f(5),f(3),f(1)];
+  }
+
+  function launch(x){
+    rockets.push({
+      x: (x ?? rand(W*0.2, W*0.8)),
+      y: H + 10,
+      vx: rand(-0.8,0.8),
+      vy: -rand(5.8*DPR, 7.4*DPR),
+      colorHue: rand(0,360),
+      life: 0,
+      trail: []
+    });
+  }
+
+  function burst(x,y,hue){
+    const count = Math.round(rand(80,130));
+    for(let i=0;i<count;i++){
+      const angle = Math.random()*Math.PI*2;
+      const speed = rand(1.2*DPR, 4.2*DPR);
+      const sat = rand(0.55,0.95), val = rand(0.8,1);
+      const rgb = hsvToRgb(hue+rand(-12,12), sat, val).map(v=>Math.floor(v*255));
+      particles.push({
+        x, y,
+        vx: Math.cos(angle)*speed,
+        vy: Math.sin(angle)*speed,
+        alpha: 1,
+        size: rand(1.2*DPR, 2.6*DPR),
+        color: `rgba(${rgb[0]},${rgb[1]},${rgb[2]},`,
+        twinkle: Math.random()<0.2
+      });
+    }
+  }
+
+  function draw(){
+    // Fade the canvas for trails
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.fillStyle = `rgba(0,0,0,${innerWidth<480 ? 0.20 : 0.16})`;
+    ctx.fillRect(0,0,W,H);
+
+    ctx.globalCompositeOperation = 'lighter';
+
+    // Update rockets
+    for(let i=rockets.length-1;i>=0;i--){
+      const r = rockets[i];
+      r.vy += GRAV;
+      r.x += r.vx; r.y += r.vy;
+      r.life += 1;
+
+      // trail
+      r.trail.push([r.x, r.y]);
+      if(r.trail.length>6) r.trail.shift();
+
+      // draw rocket core
+      ctx.beginPath();
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.arc(r.x, r.y, 1.8*DPR, 0, Math.PI*2);
+      ctx.fill();
+
+      // draw trail
+      for(let t=0;t<r.trail.length-1;t++){
+        const p1 = r.trail[t], p2 = r.trail[t+1];
+        ctx.strokeStyle = `rgba(255,255,255,${0.15 + t*0.12})`;
+        ctx.lineWidth = (1.2 - t*0.15)*DPR;
+        ctx.beginPath(); ctx.moveTo(p1[0],p1[1]); ctx.lineTo(p2[0],p2[1]); ctx.stroke();
+      }
+
+      // explode condition
+      const reachedApex = r.vy > -0.2 || r.life > 140;
+      if(reachedApex){
+        burst(r.x, r.y, r.colorHue);
+        rockets.splice(i,1);
+      }
+    }
+
+    // Update particles
+    for(let i=particles.length-1;i>=0;i--){
+      const p = particles[i];
+      p.vx *= PARTICLE_FRICTION;
+      p.vy = p.vy*PARTICLE_FRICTION + PARTICLE_GRAV;
+      p.x += p.vx; p.y += p.vy;
+      p.alpha -= 0.012 + Math.random()*0.01;
+
+      // draw particle
+      const a = p.twinkle ? p.alpha * (0.5 + Math.random()*0.5) : p.alpha;
+      if(a>0){
+        ctx.beginPath();
+        ctx.fillStyle = p.color + a + ')';
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+        ctx.fill();
+      }else{
+        particles.splice(i,1);
+      }
+    }
+
+    // Cap particles
+    if(particles.length > MAX_PARTICLES){
+      particles.splice(0, particles.length - MAX_PARTICLES);
+    }
+
+    requestAnimationFrame(draw);
+  }
+
+  // Auto launches
+  let autoTimer;
+  function startAuto(){
+    stopAuto();
+    autoTimer = setInterval(()=>{
+      const bursts = innerWidth < 480 ? 1 : (Math.random()<0.5?1:2);
+      for(let i=0;i<bursts;i++) setTimeout(()=>launch(), i*140);
+    }, 850);
+    // stop automatically after 8s
+    setTimeout(stopAuto, 8000);
+  }
+  function stopAuto(){ if(autoTimer){ clearInterval(autoTimer); autoTimer=null; } }
+
+  // Manual button
+  document.getElementById('fw-btn').addEventListener('click', ()=>{
+    for(let i=0;i<12;i++) setTimeout(()=>launch(), i*120);
+    // also sprinkle random bursts
+    setTimeout(()=>{ for(let i=0;i<8;i++) setTimeout(()=>launch(), i*90); }, 900);
+  });
+
+  // Start
+  draw();
+  // small kickoff after load
+  setTimeout(()=>{ for(let i=0;i<6;i++) setTimeout(()=>launch(), i*120); }, 1400);
+  // second wave
+  setTimeout(startAuto, 3200);
+  // third wave (for эффект «долгоиграющий»)
+  setTimeout(startAuto, 10500);
+})();
+
+/* ===== Init subtle stuff on DOMContentLoaded ===== */
+document.addEventListener('DOMContentLoaded', ()=>{
+  // (particles & emoji already started in IIFEs)
+});
+</script>
+</body>
+</html>
