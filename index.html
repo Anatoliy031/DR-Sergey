@@ -189,7 +189,8 @@
       border-radius: 15px;
       padding: 20px;
       margin: 30px 0;
-      min-height: 60px;
+      min-height: 100px;
+      height: 100px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -201,6 +202,8 @@
       color: #ff6b6b;
       text-align: center;
       text-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+      width: 100%;
+      line-height: 1.6;
     }
 
     .cursor {
@@ -353,7 +356,7 @@
     }
 
     /* Адаптивность */
-    @media (max-width: 768px) {
+          @media (max-width: 768px) {
       .birthday-card {
         padding: 30px 20px;
       }
@@ -369,6 +372,15 @@
       
       .avatar .initials {
         font-size: 2.5rem;
+      }
+      
+      .typewriter-container {
+        height: 120px;
+        min-height: 120px;
+      }
+      
+      .typewriter {
+        font-size: 1.1rem;
       }
       
       .message {
@@ -388,6 +400,20 @@
   
   <!-- Звезды на фоне -->
   <div class="stars" id="stars"></div>
+
+  <!-- Аудио элемент для фоновой музыки -->
+  <audio id="backgroundMusic" loop>
+    <!-- Поддержка разных форматов -->
+    <source src="./music.mp3" type="audio/mpeg">
+    <source src="./music.ogg" type="audio/ogg">
+    <source src="./music.wav" type="audio/wav">
+    <source src="./music.m4a" type="audio/mp4">
+    <source src="./birthday.mp3" type="audio/mpeg">
+    <source src="./birthday-music.mp3" type="audio/mpeg">
+    <source src="./happy-birthday.mp3" type="audio/mpeg">
+    <source src="./background.mp3" type="audio/mpeg">
+    <source src="./celebration.mp3" type="audio/mpeg">
+  </audio>
 
   <div class="container">
     <div class="birthday-card">
@@ -770,14 +796,59 @@ canvas.addEventListener('click', (e) => {
 // Первый автоматический салют
 setTimeout(launchMegaFireworks, 1500);
 
-// Музыка (заглушка)
+// Музыка
 let soundOn = false;
+const backgroundMusic = document.getElementById('backgroundMusic');
+
+// Попытка автоматического воспроизведения при загрузке
+window.addEventListener('load', () => {
+  // Устанавливаем громкость
+  backgroundMusic.volume = 0.3;
+  
+  // Пробуем воспроизвести автоматически (может не сработать из-за политик браузера)
+  backgroundMusic.play().catch(() => {
+    console.log('Автовоспроизведение заблокировано. Используйте кнопку для включения музыки.');
+  });
+});
+
 function toggleSound() {
-  soundOn = !soundOn;
   const btn = document.querySelector('.sound-btn');
-  btn.textContent = soundOn ? '🔇 Выключить' : '🎵 Музыка';
-  // Здесь можно добавить настоящее воспроизведение звука
+  
+  if (!soundOn) {
+    backgroundMusic.play().then(() => {
+      soundOn = true;
+      btn.textContent = '🔇 Выключить';
+      btn.style.background = 'linear-gradient(135deg, #ff6b6b, #ff8787)';
+    }).catch(error => {
+      console.error('Ошибка воспроизведения:', error);
+      alert('Не удалось воспроизвести музыку. Проверьте, что файл музыки находится в папке с сайтом.');
+    });
+  } else {
+    backgroundMusic.pause();
+    soundOn = false;
+    btn.textContent = '🎵 Музыка';
+    btn.style.background = 'linear-gradient(135deg, #4ecdc4, #44a08d)';
+  }
 }
+
+// Проверка состояния музыки
+backgroundMusic.addEventListener('play', () => {
+  soundOn = true;
+  const btn = document.querySelector('.sound-btn');
+  if (btn) {
+    btn.textContent = '🔇 Выключить';
+    btn.style.background = 'linear-gradient(135deg, #ff6b6b, #ff8787)';
+  }
+});
+
+backgroundMusic.addEventListener('pause', () => {
+  soundOn = false;
+  const btn = document.querySelector('.sound-btn');
+  if (btn) {
+    btn.textContent = '🎵 Музыка';
+    btn.style.background = 'linear-gradient(135deg, #4ecdc4, #44a08d)';
+  }
+});
 </script>
 </body>
 </html>
